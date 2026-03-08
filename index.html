@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOTTE DI FUOCO — Elmec MI War Room</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080808;--bg2:#0f0f0f;--panel:#141414;--border:#222;
+  --mim:#ff4a4a;--mim-d:rgba(255,74,74,.08);--mim-b:rgba(255,74,74,.3);
+  --tech:#4db8ff;--tech-d:rgba(77,184,255,.08);--tech-b:rgba(77,184,255,.3);
+  --sd:#ffb800;--sd-d:rgba(255,184,0,.08);--sd-b:rgba(255,184,0,.3);
+  --comm:#39e87a;--comm-d:rgba(57,232,122,.08);--comm-b:rgba(57,232,122,.3);
+  --white:#f2f2f2;--text:#aaa;--dim:#3a3a3a;--dim2:#666;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden;padding-top:48px;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 3px);pointer-events:none;z-index:9999;}
+
+.screen{display:none;height:calc(100vh - 48px);overflow-y:auto;}
+.screen.active{display:flex;flex-direction:column;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes reveal-in{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+
+/* ── TOPBAR ── */
+#topbar{height:48px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;background:var(--panel);border-bottom:1px solid var(--border);
+  position:fixed;top:0;left:0;right:0;z-index:200;}
+.tb-l{display:flex;align-items:center;gap:12px;}
+.tb-dot{width:7px;height:7px;border-radius:50%;background:var(--mim);
+  box-shadow:0 0 7px var(--mim);animation:blink 2s infinite;}
+.tb-title{font-family:'Syne',sans-serif;font-weight:900;font-size:11px;color:var(--white);letter-spacing:2px;}
+.tb-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);letter-spacing:2px;margin-top:1px;}
+.tb-r{display:flex;align-items:center;gap:12px;}
+.tb-phase{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:11px;letter-spacing:.5px;border-radius:3px;transition:all .18s;}
+.btn-primary{background:var(--white);color:#000;}.btn-primary:hover{background:#ddd;}
+.btn-ghost{background:transparent;color:var(--dim2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--white);border-color:#555;}
+.btn-disabled{opacity:.35;pointer-events:none;}
+
+/* ── AGENDA OVERLAY ── */
+#overlay-agenda{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:300;align-items:center;justify-content:center;padding:20px;}
+#overlay-agenda.open{display:flex;animation:fadeUp .2s ease;}
+.ag-box{background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:26px 30px;max-width:580px;width:100%;}
+.ag-title{font-family:'Syne',sans-serif;font-weight:900;font-size:17px;color:var(--white);margin-bottom:4px;}
+.ag-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);letter-spacing:3px;margin-bottom:20px;}
+.ag-row{display:flex;align-items:center;gap:14px;padding:9px 12px;border-radius:3px;
+  border:1px solid var(--border);margin-bottom:5px;}
+.ag-row.cur{border-color:var(--mim-b);background:var(--mim-d);}
+.ag-row.done{opacity:.4;}
+.ag-time{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim2);min-width:40px;}
+.ag-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--white);flex:1;}
+.ag-dur{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);}
+.ag-row.cur .ag-name,.ag-row.cur .ag-time{color:var(--mim);}
+
+/* ── WELCOME ── */
+#screen-welcome{align-items:center;justify-content:center;text-align:center;padding:36px 24px;}
+.wlc-eye{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:5px;margin-bottom:18px;}
+.wlc-title{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(52px,9vw,110px);
+  line-height:.88;color:var(--white);margin-bottom:5px;}
+.wlc-title em{color:var(--mim);font-style:normal;}
+.wlc-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:3px;margin-bottom:32px;}
+.wlc-brief{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--mim);
+  border-radius:4px;padding:18px 24px;max-width:660px;text-align:left;margin-bottom:36px;}
+.wlc-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--mim);letter-spacing:3px;margin-bottom:10px;}
+.wlc-txt{font-size:13px;line-height:1.85;color:var(--text);}
+.wlc-txt strong{color:var(--white);}
+.wlc-roles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:720px;width:100%;margin-bottom:32px;}
+.wlc-role{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px 14px;text-align:left;}
+.wr-stripe{height:3px;border-radius:2px;margin-bottom:10px;}
+.wr-num{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);letter-spacing:2px;margin-bottom:4px;}
+.wr-name{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;margin-bottom:4px;}
+.wr-desc{font-size:11px;color:var(--dim2);line-height:1.55;}
+
+/* ── BRIEFING ── */
+#screen-briefing{padding:22px 26px;}
+.bf-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+.bf-eyebrow{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);letter-spacing:3px;margin-bottom:5px;}
+.bf-h2{font-family:'Syne',sans-serif;font-weight:900;font-size:21px;color:var(--white);}
+.timer-big{font-family:'Share Tech Mono',monospace;font-size:44px;color:var(--comm);line-height:1;transition:color .4s;}
+.bf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.bf-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px 18px;}
+.bf-panel-full{grid-column:1/-1;}
+.bp-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim2);letter-spacing:3px;margin-bottom:10px;}
+.bp-body{font-size:12px;color:var(--text);line-height:1.8;}
+.bp-body strong{color:var(--white);}
+.bp-body em{color:var(--comm);font-style:normal;font-weight:600;}
+.bp-body li{margin-left:16px;margin-bottom:3px;}
+.tipologie{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.tipo-card{border-radius:3px;padding:10px 12px;}
+.tipo-card.t0{background:rgba(57,232,122,.07);border:1px solid var(--comm-b);}
+.tipo-card.t1{background:rgba(77,184,255,.07);border:1px solid var(--tech-b);}
+.tipo-card.t2{background:rgba(192,132,252,.07);border:1px solid rgba(192,132,252,.3);}
+.tipo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:11px;margin-bottom:4px;}
+.tipo-card.t0 .tipo-name{color:var(--comm);}
+.tipo-card.t1 .tipo-name{color:var(--tech);}
+.tipo-card.t2 .tipo-name{color:#c084fc;}
+.tipo-desc{font-size:10px;color:var(--dim2);line-height:1.5;}
+.brain-row{display:flex;gap:10px;margin-top:10px;}
+.brain-card{flex:1;border-radius:3px;padding:10px 12px;}
+.brain-card.low{background:rgba(255,74,74,.07);border:1px solid var(--mim-b);}
+.brain-card.high{background:rgba(57,232,122,.07);border:1px solid var(--comm-b);}
+.brain-title{font-family:'Syne',sans-serif;font-weight:900;font-size:12px;margin-bottom:4px;}
+.brain-card.low .brain-title{color:var(--mim);}
+.brain-card.high .brain-title{color:var(--comm);}
+.brain-body{font-size:11px;color:var(--dim2);line-height:1.5;}
+.phases-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-top:10px;}
+.ph-cell{padding:9px 8px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:9px;border-right:1px solid var(--border);letter-spacing:1px;}
+.ph-cell:last-child{border-right:none;}
+.ph-cell.p0{background:rgba(255,74,74,.07);color:var(--mim);}
+.ph-cell.p1{background:rgba(77,184,255,.07);color:var(--tech);}
+.ph-cell.p2{background:rgba(57,232,122,.07);color:var(--comm);}
+.ph-cell.p3{background:rgba(255,184,0,.07);color:var(--sd);}
+.bf-roles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.brc{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:13px;}
+.brc-stripe{height:3px;border-radius:2px;margin-bottom:9px;}
+.brc-name{font-family:'Syne',sans-serif;font-weight:800;font-size:12px;margin-bottom:4px;}
+.brc-desc{font-size:11px;color:var(--dim2);line-height:1.55;}
+.bf-nav{display:flex;justify-content:space-between;align-items:center;}
+.tbar{flex:1;margin:0 18px;background:var(--bg2);border-radius:2px;height:4px;overflow:hidden;}
+.tfill{height:100%;border-radius:2px;transition:width 1s linear,background .5s;}
+
+/* ── PHASE ── */
+#screen-phase{padding:14px 18px;}
+.ph-toprow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;}
+.ph-info .ph-eye{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);letter-spacing:3px;margin-bottom:4px;}
+.ph-info .ph-name{font-family:'Syne',sans-serif;font-weight:900;font-size:19px;color:var(--white);}
+.ph-tcol{text-align:right;}
+.ph-tbig{font-family:'Share Tech Mono',monospace;font-size:34px;color:var(--comm);line-height:1;transition:color .4s;}
+.ph-tlbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim2);letter-spacing:2px;margin-top:1px;}
+.ph-track{display:flex;margin-bottom:10px;border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.pht{flex:1;padding:7px 4px;text-align:center;font-family:'Syne',sans-serif;font-weight:700;
+  font-size:9px;color:var(--dim2);border-right:1px solid var(--border);letter-spacing:.5px;transition:all .3s;}
+.pht:last-child{border-right:none;}
+.pht.done{background:rgba(57,232,122,.07);color:var(--comm);}
+.pht.active{background:var(--white);color:#000;font-weight:900;}
+.ph-tbar{height:3px;background:var(--bg2);border-radius:2px;margin-bottom:12px;overflow:hidden;}
+.ph-tfill{height:100%;background:var(--comm);transition:width 1s linear,background .5s;}
+.ph-scen{background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--mim);
+  border-radius:3px;padding:11px 15px;margin-bottom:12px;font-size:12px;line-height:1.75;color:var(--text);}
+.ph-scen strong{color:var(--white);}
+.ph-scen-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--mim);letter-spacing:3px;margin-bottom:6px;}
+.inject-banner{display:none;background:var(--mim-d);border:1px solid var(--mim-b);border-radius:3px;
+  padding:9px 13px;margin-bottom:11px;font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:var(--mim);letter-spacing:1px;line-height:1.5;}
+
+/* ── ROLE CARDS: 3 cols ── */
+.roles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1;}
+.role-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  display:flex;flex-direction:column;overflow:hidden;transition:border-color .2s;}
+.role-card.answered{border-width:2px;}
+.rc-head{padding:9px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.rc-name{font-family:'Syne',sans-serif;font-weight:800;font-size:12px;}
+.rc-badge{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim2);letter-spacing:1px;}
+.rc-badge.done{color:var(--comm);}
+.rc-body{padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:7px;}
+.rc-inject{background:var(--mim-d);border:1px solid var(--mim-b);border-radius:3px;
+  padding:7px 9px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--mim);line-height:1.5;}
+.rc-narr{font-size:11px;color:var(--text);line-height:1.65;flex:1;}
+.rc-narr strong{color:var(--white);}
+.rc-q{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--white);
+  padding:7px 0;border-top:1px solid var(--border);}
+.rc-choices{display:flex;flex-direction:column;gap:4px;}
+.rc-choice{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border:1px solid var(--border);
+  border-radius:3px;cursor:pointer;transition:all .15s;background:var(--bg2);}
+.rc-choice:hover{border-color:#555;background:var(--bg);}
+.rc-choice.sel-c{border-color:var(--comm-b)!important;background:rgba(57,232,122,.06)!important;}
+.rc-choice.sel-p{border-color:var(--sd-b)!important;background:var(--sd-d)!important;}
+.rc-choice.sel-x{border-color:var(--mim-b)!important;background:var(--mim-d)!important;}
+.rc-ck{font-family:'Syne',sans-serif;font-weight:900;font-size:12px;min-width:14px;flex-shrink:0;margin-top:1px;}
+.rc-ct{font-size:10px;color:var(--text);line-height:1.5;}
+.rc-choice.sel-c .rc-ck{color:var(--comm);}
+.rc-choice.sel-p .rc-ck{color:var(--sd);}
+.rc-choice.sel-x .rc-ck{color:var(--mim);}
+.rc-choice.sel-c .rc-ct,.rc-choice.sel-p .rc-ct,.rc-choice.sel-x .rc-ct{color:var(--white);}
+
+.ph-nav{display:flex;justify-content:space-between;align-items:center;padding:10px 0 4px;flex-shrink:0;}
+.ph-answered{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:1px;}
+.ph-answered b{color:var(--white);}
+
+/* ── REVEAL ── */
+#screen-reveal{padding:14px 20px;}
+.rv-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.rv-eyebrow{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);letter-spacing:3px;margin-bottom:5px;}
+.rv-h2{font-family:'Syne',sans-serif;font-weight:900;font-size:21px;color:var(--white);}
+.rv-sub{font-size:12px;color:var(--dim2);margin-top:2px;}
+
+.rv-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.rv-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:14px;animation:reveal-in .4s ease both;display:flex;flex-direction:column;gap:7px;}
+.rv-card:nth-child(1){animation-delay:.05s;}
+.rv-card:nth-child(2){animation-delay:.12s;}
+.rv-card:nth-child(3){animation-delay:.19s;}
+.rv-card.rvc{border-color:var(--comm-b);border-width:2px;}
+.rv-card.rvp{border-color:var(--sd-b);border-width:2px;}
+.rv-card.rvx{border-color:var(--mim-b);border-width:2px;}
+.rv-grp{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;}
+.rv-chosen{font-size:11px;color:var(--text);line-height:1.5;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.rv-chosen strong{color:var(--white);}
+.rv-fb{font-size:11px;color:var(--dim2);line-height:1.6;flex:1;}
+.rv-pts{font-family:'Syne',sans-serif;font-weight:900;font-size:20px;margin-top:3px;}
+.rvc .rv-pts{color:var(--comm);}.rvp .rv-pts{color:var(--sd);}.rvx .rv-pts{color:var(--mim);}
+
+.rv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.bonus-box{display:none;background:var(--sd-d);border:1px solid var(--sd-b);
+  border-radius:4px;padding:13px 16px;animation:reveal-in .5s ease .24s both;grid-column:1/-1;}
+.bonus-title{font-family:'Syne',sans-serif;font-weight:900;font-size:13px;color:var(--sd);margin-bottom:4px;}
+.bonus-body{font-size:11px;color:var(--text);line-height:1.6;}
+.cq-box{background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--mim);
+  border-radius:4px;padding:12px 15px;animation:reveal-in .5s ease .28s both;}
+.cq-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--mim);letter-spacing:3px;margin-bottom:7px;}
+.cq-txt{font-size:12px;color:var(--text);line-height:1.75;}
+.cq-txt strong{color:var(--white);}
+.scoreboard{background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:13px 15px;animation:reveal-in .5s ease .32s both;}
+.sb-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim2);letter-spacing:3px;margin-bottom:12px;}
+.sb-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.sb-name{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;width:120px;flex-shrink:0;}
+.sb-bar-w{flex:1;background:var(--bg2);border-radius:2px;height:5px;overflow:hidden;}
+.sb-bar{height:100%;border-radius:2px;width:0;transition:width .9s ease .5s;}
+.sb-val{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--white);min-width:46px;text-align:right;}
+.dq-box{background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:13px 15px;animation:reveal-in .5s ease .36s both;}
+.dq-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim2);letter-spacing:3px;margin-bottom:9px;}
+.dq-item{display:flex;gap:10px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:5px;}
+.dq-item b{color:var(--white);min-width:100px;flex-shrink:0;}
+.rv-nav{display:flex;justify-content:space-between;align-items:center;padding:10px 0 4px;flex-shrink:0;}
+.rv-hint{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);letter-spacing:1px;}
+
+/* ── BREAK ── */
+#screen-break{align-items:center;justify-content:center;text-align:center;}
+.brk-icon{font-size:52px;margin-bottom:16px;}
+.brk-title{font-family:'Syne',sans-serif;font-weight:900;font-size:30px;color:var(--white);margin-bottom:5px;}
+.brk-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:3px;margin-bottom:32px;}
+.brk-timer{font-family:'Share Tech Mono',monospace;font-size:76px;color:var(--comm);line-height:1;margin-bottom:10px;transition:color .4s;}
+.brk-hint{font-size:13px;color:var(--dim2);margin-bottom:28px;}
+.brk-track{width:300px;height:4px;background:var(--bg2);border-radius:2px;margin:0 auto 28px;}
+.brk-fill{height:100%;background:var(--comm);border-radius:2px;transition:width 1s linear,background .5s;}
+
+/* ── FINAL ── */
+#screen-final{padding:20px 26px;}
+.fin-title{font-family:'Syne',sans-serif;font-weight:900;font-size:26px;color:var(--white);text-align:center;margin-bottom:4px;}
+.fin-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);letter-spacing:3px;text-align:center;margin-bottom:22px;}
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.pod{background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:18px 12px;text-align:center;animation:reveal-in .4s ease both;}
+.pod:nth-child(1){animation-delay:.05s;}
+.pod:nth-child(2){animation-delay:.12s;}
+.pod:nth-child(3){animation-delay:.19s;}
+.pod.winner{border-width:2px;border-color:var(--sd);}
+.pod-medal{font-size:28px;margin-bottom:5px;}
+.pod-name{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;margin-bottom:3px;}
+.pod-score{font-family:'Syne',sans-serif;font-weight:900;font-size:26px;margin-bottom:2px;}
+.pod-bonus{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim2);}
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.fin-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px;}
+.fin-panel-full{grid-column:1/-1;}
+.fp-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim2);letter-spacing:3px;margin-bottom:11px;}
+.fp-body{font-size:12px;color:var(--text);line-height:1.8;}
+.fp-body li{margin-left:15px;margin-bottom:3px;}
+.fp-body b{color:var(--white);}
+.fp-body em{color:var(--comm);font-style:normal;font-weight:600;}
+.cl-phases{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:10px;}
+.cl-ph{padding:7px 5px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:9px;border-right:1px solid var(--border);letter-spacing:1px;}
+.cl-ph:last-child{border-right:none;}
+.cl-p0{background:var(--mim-d);color:var(--mim);}
+.cl-p1{background:var(--tech-d);color:var(--tech);}
+.cl-p2{background:var(--comm-d);color:var(--comm);}
+.cl-p3{background:var(--sd-d);color:var(--sd);}
+.cl-items{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.cl-col{font-size:11px;color:var(--dim2);line-height:1.9;}
+.fin-btns{display:flex;gap:10px;}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="tb-l">
+    <div class="tb-dot"></div>
+    <div>
+      <div class="tb-title">NOTTE DI FUOCO — ELMEC MI</div>
+      <div class="tb-sub">MAJOR INCIDENT TRAINING // MODALITÀ FACILITATORE</div>
+    </div>
+  </div>
+  <div class="tb-r">
+    <div class="tb-phase" id="tb-phase"></div>
+    <button class="btn btn-ghost" onclick="toggleAgenda()">⬡ AGENDA</button>
+  </div>
+</div>
+
+<div id="overlay-agenda">
+  <div class="ag-box">
+    <div class="ag-title">Agenda — 90 minuti</div>
+    <div class="ag-sub">// NOTTE DI FUOCO — MI TRAINING //</div>
+    <div id="ag-rows"></div>
+    <br><button class="btn btn-ghost" onclick="toggleAgenda()">Chiudi</button>
+  </div>
+</div>
+
+<!-- WELCOME -->
+<div id="screen-welcome" class="screen active">
+  <div class="wlc-eye">SESSIONE FORMATIVA // 3 GRUPPI // 90 MINUTI</div>
+  <h1 class="wlc-title">NOTTE<br>DI <em>FUOCO</em></h1>
+  <div class="wlc-sub">// UN INCIDENTE. TRE RUOLI. CHI GESTISCE MEGLIO? //</div>
+  <div class="wlc-brief">
+    <div class="wlc-lbl">▸ SCENARIO — ORE 23:30, MERCOLEDÌ</div>
+    <div class="wlc-txt">Lo storage che serve <strong>150 VM del cliente "Acme Industries"</strong> va in allarme critico. Le VM diventano irraggiungibili una dopo l'altra. La produzione notturna è a rischio blocco totale.<br><br>
+    Tre gruppi gestiscono lo stesso incidente dai propri ruoli: <strong>MIM, Tecnico, Service Desk.</strong> Il facilitatore guida la sessione. Dopo ogni fase, il reveal confronta le scelte di tutti.</div>
+  </div>
+  <div class="wlc-roles">
+    <div class="wlc-role">
+      <div class="wr-stripe" style="background:var(--mim)"></div>
+      <div class="wr-num">GRUPPO 1</div>
+      <div class="wr-name" style="color:var(--mim)">👑 MIM</div>
+      <div class="wr-desc">Major Incident Manager. Dichiari il MI, coordini il processo, gestisci le comunicazioni interne ed esterne. Sei il punto di riferimento per tutti.</div>
+    </div>
+    <div class="wlc-role">
+      <div class="wr-stripe" style="background:var(--tech)"></div>
+      <div class="wr-num">GRUPPO 2</div>
+      <div class="wr-name" style="color:var(--tech)">⚙️ TECNICO</div>
+      <div class="wr-desc">Infrastructure Specialist. Diagnostichi la causa, proponi opzioni al MIM, esegui il ripristino. Sei il motore tecnico del MI.</div>
+    </div>
+    <div class="wlc-role">
+      <div class="wr-stripe" style="background:var(--sd)"></div>
+      <div class="wr-num">GRUPPO 3</div>
+      <div class="wr-name" style="color:var(--sd)">🗂️ SERVICE DESK</div>
+      <div class="wr-desc">Process & Ticketing. Classifichi l'evento, apri il ticket MI, coordini i flussi, gestisci l'escalation e chiudi formalmente il processo.</div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="startBriefing()">▸ AVVIA SESSIONE</button>
+</div>
+
+<!-- BRIEFING -->
+<div id="screen-briefing" class="screen">
+  <div class="bf-hdr">
+    <div>
+      <div class="bf-eyebrow">STEP 1 / 6 — BRIEFING INIZIALE</div>
+      <div class="bf-h2">Processo MI Elmec — Contesto formativo</div>
+    </div>
+    <div class="timer-big" id="brief-timer">12:00</div>
+  </div>
+  <div class="bf-grid">
+    <!-- Definizione -->
+    <div class="bf-panel">
+      <div class="bp-lbl">▸ COS'È UN MAJOR INCIDENT</div>
+      <div class="bp-body">Un <strong>Major Incident</strong> è un evento che <em>interrompe o degrada gravemente</em> un servizio che <strong>impatta il business del cliente</strong>.<br><br>
+      Non ogni problema grave è un MI. I criteri si basano sull'<strong>impatto sul business</strong>, non sulla complessità tecnica o sul numero di utenti coinvolti.</div>
+    </div>
+    <!-- Brain Economy -->
+    <div class="bf-panel">
+      <div class="bp-lbl">▸ BRAIN ECONOMY — PERCHÉ IL PROCESSO ESISTE</div>
+      <div class="bp-body">Durante un'emergenza il cervello tende alla <strong>Low Road</strong>: risposta rapida, emotiva, non strutturata. Il processo MI è lo strumento per attivare la <strong>High Road</strong>.</div>
+      <div class="brain-row">
+        <div class="brain-card low">
+          <div class="brain-title">⚡ LOW ROAD</div>
+          <div class="brain-body">Amigdala → risposta Quick & Dirty. Senza processo: ognuno agisce in autonomia, comunicazione caotica, errori irreversibili.</div>
+        </div>
+        <div class="brain-card high">
+          <div class="brain-title">✓ HIGH ROAD</div>
+          <div class="brain-body">Corteccia → risposta Low & Accurate. Con il processo: ruoli chiari, comunicazione strutturata, decisioni condivise.</div>
+        </div>
+      </div>
+    </div>
+    <!-- Tipologie -->
+    <div class="bf-panel bf-panel-full">
+      <div class="bp-lbl">▸ 3 TIPOLOGIE DI MAJOR INCIDENT ELMEC</div>
+      <div class="tipologie">
+        <div class="tipo-card t0">
+          <div class="tipo-name">MI ELMEC</div>
+          <div class="tipo-desc">Sistemi Elmec in DC che possono impattare più clienti.<br><em>Es: storage che serve 150 VM di un cliente si guasta → down 5h</em></div>
+        </div>
+        <div class="tipo-card t1">
+          <div class="tipo-name">MI CLIENTE con resp. Elmec</div>
+          <div class="tipo-desc">In DC Elmec o dal cliente, su infrastrutture di responsabilità Elmec (causa e gestione).<br><em>Es: macchina applicativa satura il disco C in DC</em></div>
+        </div>
+        <div class="tipo-card t2">
+          <div class="tipo-name">MI CLIENTE senza resp. Elmec</div>
+          <div class="tipo-desc">Causa esterna, Elmec coinvolta nella risoluzione ma non responsabile.<br><em>Es: taglio fibra Fastweb, applicazione cliente aggiornata male</em></div>
+        </div>
+      </div>
+    </div>
+    <!-- Fasi -->
+    <div class="bf-panel bf-panel-full">
+      <div class="bp-lbl">▸ PROCESSO HIGH-LEVEL — LE 4 FASI</div>
+      <div class="phases-row">
+        <div class="ph-cell p0">1 — DICHIARAZIONE<br><span style="font-size:8px;color:var(--dim2)">Congiunta • Telefonica • Ticket</span></div>
+        <div class="ph-cell p1">2 — AVVIO<br><span style="font-size:8px;color:var(--dim2)">MIM • Procedura • Comunicazione • Tavoli</span></div>
+        <div class="ph-cell p2">3 — ESECUZIONE<br><span style="font-size:8px;color:var(--dim2)">Identificazione • Troubleshooting • Fix/Workaround</span></div>
+        <div class="ph-cell p3">4 — CHIUSURA<br><span style="font-size:8px;color:var(--dim2)">Congiunta MIM-Cliente • Problem Det. • MI Report</span></div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--dim2);line-height:1.8;">
+        <strong style="color:var(--white)">Dichiarazione:</strong> sempre congiunta tra unico interlocutore cliente e referente Elmec, confermata per via telefonica. Entrambe le parti possono proporla.<br>
+        <strong style="color:var(--white)">Avvio:</strong> nomina MIM → definizione procedura e piano comunicazione (strumenti, frequenza, attori) → prima comunicazione al cliente → tavoli tecnici con SAL regolari.<br>
+        <strong style="color:var(--white)">Chiusura:</strong> congiunta MIM-cliente → problem determination → MI Report con tool apposito → chiusura ticket associato.
+      </div>
+    </div>
+    <!-- Ruoli -->
+    <div class="bf-panel bf-panel-full">
+      <div class="bp-lbl">▸ I 3 RUOLI DI OGGI</div>
+      <div class="bf-roles-grid">
+        <div class="brc" style="border-left:2px solid var(--mim)">
+          <div class="brc-stripe" style="background:var(--mim)"></div>
+          <div class="brc-name" style="color:var(--mim)">👑 MIM — Major Incident Manager</div>
+          <div class="brc-desc">Responsabile della comunicazione interna ed esterna e della gestione dell'incidente. Dichiara il MI, nomina se stesso, definisce la procedura, gestisce le aspettative verso il cliente. Il processo MI parte da lui e si chiude con lui.</div>
+        </div>
+        <div class="brc" style="border-left:2px solid var(--tech)">
+          <div class="brc-stripe" style="background:var(--tech)"></div>
+          <div class="brc-name" style="color:var(--tech)">⚙️ TECNICO — Infrastructure Specialist</div>
+          <div class="brc-desc">Esegue la diagnostica, identifica la causa, propone le opzioni di ripristino al MIM. Non decide da solo: porta le informazioni al MIM con rischi e benefici di ogni opzione. È il motore tecnico del MI, ma lavora sempre in coordinamento.</div>
+        </div>
+        <div class="brc" style="border-left:2px solid var(--sd)">
+          <div class="brc-stripe" style="background:var(--sd)"></div>
+          <div class="brc-name" style="color:var(--sd)">🗂️ SERVICE DESK — Process & Ticketing</div>
+          <div class="brc-desc">Apre il ticket di categoria corretta, collega tutti i flussi al MI master, mantiene il log aggiornato, coordina l'escalation vendor e supporta la chiusura formale con MI Report. È la memoria del MI — senza Service Desk non c'è traccia.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bf-nav">
+    <button class="btn btn-ghost" onclick="show('welcome')">← Indietro</button>
+    <div style="flex:1;margin:0 18px;"><div class="tbar"><div class="tfill" id="brief-fill" style="width:100%;background:var(--comm)"></div></div></div>
+    <button class="btn btn-primary" onclick="startPhase(0)">Inizia Fase 1 — Dichiarazione →</button>
+  </div>
+</div>
+
+<!-- PHASE -->
+<div id="screen-phase" class="screen">
+  <div class="ph-toprow">
+    <div class="ph-info">
+      <div class="ph-eye" id="ph-eye">FASE 1 / 4</div>
+      <div class="ph-name" id="ph-name">DICHIARAZIONE</div>
+    </div>
+    <div class="ph-tcol">
+      <div class="ph-tbig" id="ph-tbig">6:00</div>
+      <div class="ph-tlbl">TEMPO DISCUSSIONE</div>
+    </div>
+  </div>
+  <div class="ph-track">
+    <div class="pht" id="pht0">DICHIARAZIONE</div>
+    <div class="pht" id="pht1">AVVIO</div>
+    <div class="pht" id="pht2">ESECUZIONE</div>
+    <div class="pht" id="pht3">CHIUSURA</div>
+  </div>
+  <div class="ph-tbar"><div class="ph-tfill" id="ph-tfill" style="width:100%"></div></div>
+  <div class="ph-scen"><div class="ph-scen-lbl" id="ph-scen-lbl">▸ SCENARIO</div><span id="ph-scen-txt"></span></div>
+  <div class="inject-banner" id="inject-banner"></div>
+  <div class="roles-grid" id="roles-grid"></div>
+  <div class="ph-nav">
+    <div class="ph-answered" id="ph-answered">Risposte: <b>0 / 3</b> — I gruppi discutono e si alzano per scegliere</div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" onclick="resetPhaseAnswers()">↺ Reset</button>
+      <button class="btn btn-primary btn-disabled" id="ph-reveal-btn" onclick="showReveal()">▸ MOSTRA REVEAL</button>
+    </div>
+  </div>
+</div>
+
+<!-- REVEAL -->
+<div id="screen-reveal" class="screen">
+  <div class="rv-hdr">
+    <div>
+      <div class="rv-eyebrow" id="rv-eyebrow">REVEAL — FASE 1</div>
+      <div class="rv-h2" id="rv-h2">Cosa ha deciso ciascun gruppo?</div>
+      <div class="rv-sub" id="rv-sub"></div>
+    </div>
+  </div>
+  <div class="rv-cards" id="rv-cards"></div>
+  <div class="rv-bottom">
+    <div class="bonus-box" id="bonus-box">
+      <div class="bonus-title" id="bonus-title"></div>
+      <div class="bonus-body" id="bonus-body"></div>
+    </div>
+    <div class="cq-box">
+      <div class="cq-lbl">▸ CONSEGUENZA SUL PROCESSO</div>
+      <div class="cq-txt" id="cq-txt"></div>
+    </div>
+    <div class="scoreboard">
+      <div class="sb-lbl">▸ CLASSIFICA</div>
+      <div id="sb-rows"></div>
+    </div>
+  </div>
+  <div class="dq-box">
+    <div class="dq-lbl">▸ DEBRIEF — DOMANDE PER LA DISCUSSIONE (5 min)</div>
+    <div id="dq-list"></div>
+  </div>
+  <div class="rv-nav">
+    <div class="rv-hint">Discutete le domande prima di procedere</div>
+    <button class="btn btn-primary" id="rv-next-btn" onclick="goNext()">Fase successiva →</button>
+  </div>
+</div>
+
+<!-- BREAK -->
+<div id="screen-break" class="screen">
+  <div class="brk-icon">☕</div>
+  <div class="brk-title">Pausa caffè</div>
+  <div class="brk-sub">// RIPRENDETE TRA: //</div>
+  <div class="brk-timer" id="brk-timer">8:00</div>
+  <div class="brk-hint">Riprendiamo con la Fase 3 — Esecuzione</div>
+  <div class="brk-track"><div class="brk-fill" id="brk-fill" style="width:100%"></div></div>
+  <button class="btn btn-primary" onclick="startPhase(2)">Salta pausa → Inizia Fase 3</button>
+</div>
+
+<!-- FINAL -->
+<div id="screen-final" class="screen">
+  <div class="fin-title">DEBRIEF FINALE</div>
+  <div class="fin-sub">// NOTTE DI FUOCO — ANALISI POST-INCIDENTE //</div>
+  <div class="podium" id="podium"></div>
+  <div class="fin-grid">
+    <div class="fin-panel">
+      <div class="fp-lbl">▸ CHECKLIST MI ELMEC</div>
+      <div class="cl-phases">
+        <div class="cl-ph cl-p0">DICHIARAZIONE</div>
+        <div class="cl-ph cl-p1">AVVIO</div>
+        <div class="cl-ph cl-p2">ESECUZIONE</div>
+        <div class="cl-ph cl-p3">CHIUSURA</div>
+      </div>
+      <div class="cl-items" style="margin-top:10px;">
+        <div class="cl-col">Dichiarazione congiunta<br>Chiamata telefonica<br>Ticket MI aperto</div>
+        <div class="cl-col">Nomina MIM<br>Piano comunicazione<br>Tavoli tecnici + SAL</div>
+        <div class="cl-col">Root cause analysis<br>Workaround / fix<br>Update regolari</div>
+        <div class="cl-col">Chiusura congiunta<br>Problem determination<br>MI Report + ticket</div>
+      </div>
+    </div>
+    <div class="fin-panel">
+      <div class="fp-lbl">▸ 3 TIPOLOGIE MI ELMEC</div>
+      <div class="fp-body"><ul>
+        <li><em>MI Elmec</em> — sistemi Elmec in DC, impatto potenziale multi-cliente</li>
+        <li><em>MI Cliente con resp. Elmec</em> — causa e gestione sono responsabilità Elmec</li>
+        <li><em>MI Cliente senza resp. Elmec</em> — causa esterna, Elmec coinvolta nella risoluzione</li>
+      </ul><br>
+      <b>Notte di Fuoco</b> = <em>MI Elmec</em>: guasto su storage Elmec in DC, impatto diretto su cliente enterprise.</div>
+    </div>
+    <div class="fin-panel fin-panel-full">
+      <div class="fp-lbl">▸ DOMANDE DI DEBRIEF FINALE (20 min)</div>
+      <div class="fp-body"><ul>
+        <li><b>MIM:</b> In quale momento del MI avete avuto più difficoltà a mantenere il controllo del processo? La High Road o la Low Road ha prevalso?</li>
+        <li><b>Tecnico:</b> Dove si è creata tensione tra velocità tecnica e governance? Quando è giusto aspettare l'ok del MIM e quando procedere in autonomia?</li>
+        <li><b>Service Desk:</b> Il ticket MI ha davvero aiutato il coordinamento o è sembrato burocrazia? Cosa cambiereste nel processo di ticketing?</li>
+        <li><b>Tutti:</b> Pensate a un MI reale che avete vissuto: quale fase del processo era più debole? Cosa cambiereste nella vostra operatività dopo questa sessione?</li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="fin-btns">
+    <button class="btn btn-ghost" onclick="resetAll()">↺ Nuova partita</button>
+  </div>
+</div>
+
+<script>
+const GROUPS = {
+  mim:  { id:'mim',  label:'GRUPPO 1', name:'MIM',          icon:'👑', color:'var(--mim)',  bar:'#ff4a4a' },
+  tech: { id:'tech', label:'GRUPPO 2', name:'TECNICO',       icon:'⚙️', color:'var(--tech)', bar:'#4db8ff' },
+  sd:   { id:'sd',   label:'GRUPPO 3', name:'SERVICE DESK',  icon:'🗂️', color:'var(--sd)',   bar:'#ffb800' }
+};
+const GIDS = ['mim','tech','sd'];
+
+const AGENDA = [
+  { label:'Briefing — processo, tipologie, ruoli', dur:'12 min', step:1 },
+  { label:'Fase 1 — Dichiarazione',                dur:'11 min', step:2 },
+  { label:'Fase 2 — Avvio',                        dur:'12 min', step:3 },
+  { label:'☕ Pausa caffè',                         dur:'8 min',  step:4 },
+  { label:'Fase 3 — Esecuzione',                   dur:'15 min', step:5 },
+  { label:'Fase 4 — Chiusura',                     dur:'12 min', step:6 },
+  { label:'Debrief finale + podio',                dur:'20 min', step:7 },
+];
+
+const PHASES = [
+  // ── FASE 0: DICHIARAZIONE ──
+  {
+    name:'DICHIARAZIONE', time:390,
+    fac_scenario:`<strong>23:31.</strong> Il monitoring rileva allarme critico sullo storage: 150 VM di Acme Industries a rischio. È un caso da manuale di <strong>MI Elmec</strong> — sistemi Elmec in DC con impatto diretto su cliente enterprise. Nessun MI ancora dichiarato, nessun ticket aperto. Ogni ruolo deve reagire.`,
+    inject: null,
+    reveal_title:'Cosa ha deciso ciascun gruppo?',
+    reveal_sub:'Il MI è stato dichiarato correttamente? Il processo è partito?',
+    debrief_questions:[
+      { role:'MIM', q:'Quali criteri avete usato per decidere se dichiarare o meno il MI? La pressione del momento ha influenzato la scelta?' },
+      { role:'TECNICO', q:'Fino a dove arriva la vostra autonomia tecnica prima di coinvolgere il MIM? Quando è sbagliato aspettare?' },
+      { role:'SERVICE DESK', q:'Come distinguete nella pratica un P1 urgente da un MI? Il ticket corretto cambia davvero qualcosa nel processo?' },
+    ],
+    narratives:{
+      mim:`<strong>23:31.</strong> Alert critico: storage offline, 150 VM Acme a rischio. Nessuna causa nota ancora. Il cliente non sa nulla. Sai che la dichiarazione MI deve avvenire <em>congiuntamente</em> con un unico interlocutore del cliente, confermata telefonicamente. Hai pochi minuti.`,
+      tech:`<strong>23:31.</strong> Alert diretto: storage critico, 150 VM Acme. Sei di turno. Hai accesso ai sistemi e ai log. Il MIM non ha ancora dichiarato nulla. Ogni minuto senza diagnosi è un minuto in più di downtime.`,
+      sd:`<strong>23:31.</strong> Alert automatici in coda: storage Acme, 150 VM, critico. Tra minuti arriveranno le prime chiamate. Devi decidere come classificare l'evento e cosa comunicare al MIM. Il ticket che apri definisce come viene gestito tutto il resto.`
+    },
+    questions:{
+      mim:'Sono le 23:31. Non hai la causa. Il cliente non lo sa ancora. Cosa fai?',
+      tech:'Alert ricevuto. Hai i sistemi davanti. Qual è il tuo primo passo?',
+      sd:'Alert critico su 150 VM. Come classifichi e apri il ticket?'
+    },
+    choices:{
+      mim:[
+        { key:'A', text:'Dichiari subito il MI Elmec: 150 VM di un cliente enterprise soddisfano i criteri. Chiami il referente IT di Acme per la dichiarazione congiunta telefonica e nomini te stesso MIM.', type:'c', pts:15 },
+        { key:'B', text:'Aspetti 15 min di diagnostica tecnica per evitare un falso allarme: non vuoi svegliare tutto il team per niente.', type:'x', pts:0 },
+        { key:'C', text:'Apri un P1 standard e rivaluti tra 10 minuti se escalare a MI: vuoi avere più informazioni prima.', type:'p', pts:5 },
+        { key:'D', text:'Chiami il tecnico per capire la causa, poi decidi: vuoi essere sicuro di cosa stai dichiarando.', type:'p', pts:3 }
+      ],
+      tech:[
+        { key:'A', text:'Avvii subito diagnostica parallela: stato storage, log ultimi 30 min, verifica failover — senza modificare nulla ancora.', type:'c', pts:15 },
+        { key:'B', text:'Riavvii il servizio storage: è la mossa più rapida e spesso risolve da sola.', type:'x', pts:0 },
+        { key:'C', text:'Aspetti che il MIM dichiari formalmente il MI prima di fare qualsiasi cosa: non vuoi agire senza processo.', type:'p', pts:4 },
+        { key:'D', text:'Contatti subito il vendor dello storage per aprire un ticket di supporto: meglio partire subito con l\'escalation.', type:'p', pts:5 }
+      ],
+      sd:[
+        { key:'A', text:'Apri un P1 standard per le prime segnalazioni e aspetti che il MIM decida se dichiarare MI.', type:'p', pts:4 },
+        { key:'B', text:'Apri il ticket come "MI Elmec", colleghi gli alert automatici come child ticket, aggiorni il log ogni 15 min e avvisi subito il MIM.', type:'c', pts:15 },
+        { key:'C', text:'Aspetti di capire meglio la situazione prima di aprire qualsiasi cosa: un ticket sbagliato crea confusione.', type:'x', pts:0 },
+        { key:'D', text:'Chiami il MIM per ricevere istruzioni su che ticket aprire: non vuoi agire fuori processo.', type:'p', pts:5 }
+      ]
+    },
+    feedback:{
+      mim:{
+        c:'Corretto. La dichiarazione MI Elmec si basa sull\'impatto, non sulla causa nota. 150 VM enterprise sono sufficienti. La chiamata congiunta telefonica al referente cliente è obbligatoria — è il processo Elmec. Ogni minuto senza dichiarazione è governance persa.',
+        p:'Parziale. Un P1 non attiva il processo MI: nessun MIM nominato, nessuna dichiarazione congiunta con il cliente, nessun piano comunicazione strutturato. Si perde il framework che protegge dal caos.',
+        x:'Errore. I criteri MI si basano sull\'impatto, non sulla conoscenza della causa. Aspettare 15 minuti significa 15 minuti senza MIM, senza dichiarazione congiunta, senza processo — in piena Low Road.'
+      },
+      tech:{
+        c:'Corretto. Diagnostica parallela senza modifiche: prima si capisce, poi si agisce. Modificare senza diagnosi può aggravare il guasto, perdere dati e distruggere l\'audit trail necessario alla root cause analysis.',
+        p:'Parziale. La diagnostica può e deve iniziare in parallelo alla dichiarazione MI, senza aspettare l\'autorizzazione formale. Aspettare o chiamare il vendor senza propria analisi rallenta tutto.',
+        x:'Errore gravissimo. Riavviare senza diagnosi è Low Road pura: azione rapida, conseguenze imprevedibili. Si può perdere dati, corrompere filesystem, distruggere i log per la root cause.'
+      },
+      sd:{
+        c:'Corretto. Il ticket MI Elmec con child ticket collegati è la struttura giusta: vista unificata, no duplicati, log continuo. Il Service Desk non aspetta istruzioni per aprire il ticket corretto — ha il mandato di processo.',
+        p:'Parziale. Aspettare istruzioni o aprire un P1 non crea la struttura MI necessaria. Il SD ha il ruolo di aprire il ticket corretto autonomamente, non di aspettare che qualcuno glielo dica.',
+        x:'Errore. Aspettare di capire meglio significa aprire il ticket quando il MI è già in piena crisi. Il ticket si apre subito con le informazioni disponibili — si aggiorna man mano.'
+      }
+    },
+    bonus:{
+      condition: ch => ch.mim?.type==='c' && ch.sd?.type==='c',
+      groups:['mim','sd'], pts:5,
+      title:'🎯 COORDINAMENTO MIM + SERVICE DESK',
+      body:'Il MIM ha dichiarato correttamente con chiamata congiunta al cliente e il Service Desk ha aperto il ticket MI Elmec in modo autonomo e strutturato. Il processo è partito in modo allineato. +5 punti per MIM e Service Desk!'
+    },
+    consequence: ch => {
+      const m=ch.mim?.type==='c', s=ch.sd?.type==='c';
+      if(m&&s) return `<strong>Avvio coordinato.</strong> MI dichiarato con chiamata congiunta, ticket MI aperto correttamente. La High Road è attivata. Entrate nella Fase 2 con vantaggio di processo.`;
+      if(m&&!s) return `MI dichiarato correttamente, ma <strong>la struttura del ticket non è quella MI.</strong> Il processo è avviato ma la traccia documentale è fragile fin dall'inizio.`;
+      if(!m&&s) return `Ticket MI aperto correttamente, ma <strong>senza dichiarazione formale congiunta con il cliente il processo MI non è attivo.</strong> Si lavora senza MIM nominato.`;
+      return `<strong>Né dichiarazione MI formale né ticket corretto.</strong> Si sta lavorando in modalità P1 standard su un incidente che richiede il processo MI. Fase 2 sotto pressione.`;
+    }
+  },
+
+  // ── FASE 1: AVVIO ──
+  {
+    name:'AVVIO', time:420,
+    fac_scenario:`<strong>23:45.</strong> Il MI è dichiarato. La diagnostica preliminare del tecnico indica un guasto hardware sul controller storage primario — il failover automatico non è scattato. Il MIM deve strutturare l'Avvio secondo il processo: nomina MIM → procedura → piano di comunicazione (strumenti, frequenza, attori) → prima comunicazione al cliente → tavoli tecnici con SAL regolari.`,
+    inject:`⚠ INJECT — Diagnostica preliminare: guasto hardware su controller storage primario. Failover automatico non scattato — possibile bug firmware. Opzioni: workaround in 45 min, soluzione definitiva con vendor in 2-3h.`,
+    reveal_title:'Come avete strutturato l\'avvio?',
+    reveal_sub:'MIM, piano comunicazione, tavoli tecnici, prima comunicazione al cliente: tutto attivato in parallelo?',
+    debrief_questions:[
+      { role:'MIM', q:'Qual è il rischio di aspettare l\'ETA tecnico prima di strutturare il piano di comunicazione? Il cliente può aspettare?' },
+      { role:'TECNICO', q:'Quando è giusto portare le opzioni al MIM invece di procedere in autonomia? Dove sta il confine?' },
+      { role:'SERVICE DESK', q:'Come si mantiene la visibilità unificata su un MI con decine di ticket correlati che arrivano in parallelo?' },
+    ],
+    narratives:{
+      mim:`<strong>23:45.</strong> MI dichiarato. Il tecnico ha completato la prima diagnostica. Devi ora strutturare formalmente l'<strong>Avvio</strong>: piano di comunicazione (strumenti, frequenza, attori), prima comunicazione al cliente con accordi e coordinate, tavoli tecnici. Il cliente non ha ancora ricevuto nulla.`,
+      tech:`<strong>23:45.</strong> Diagnostica completata: <strong>guasto hardware su controller storage primario. Failover non scattato</strong> — probabile bug firmware. Hai due opzioni: workaround in 45 min (riconfigurazione manuale failover) oppure soluzione definitiva in 2-3h (sostituzione hardware vendor). Il MIM ti chiede un ETA.`,
+      sd:`<strong>23:47.</strong> Ticket MI aperto. Negli ultimi 12 minuti: <strong>18 ticket correlati</strong> da utenti Acme. La coda cresce. Il bridge tecnico chiede aggiornamenti ogni 5 minuti. Devi decidere come gestire i flussi e come mantenere il log MI aggiornato.`
+    },
+    questions:{
+      mim:'Come strutturi l\'Avvio? Piano comunicazione, prima comunicazione al cliente, tavoli.',
+      tech:'Hai due opzioni. Come le presenti al MIM? Come procedi?',
+      sd:'18 ticket correlati in arrivo. Come gestisci i flussi e il log MI?'
+    },
+    choices:{
+      mim:[
+        { key:'A', text:'Aspetti l\'ETA definitivo del tecnico prima di strutturare il piano comunicazione: non vuoi dare aggiornamenti vaghi al cliente.', type:'x', pts:0 },
+        { key:'B', text:'Apri il bridge tecnico interno e aspetti che la situazione si chiarisca prima di coinvolgere CSM e management.', type:'p', pts:4 },
+        { key:'C', text:'Definisci il piano comunicazione (bridge Teams per tecnici, aggiornamenti al cliente ogni 30 min), invii la prima comunicazione al cliente con accordi e coordinate, coinvolgi CSM e responsabili di linea, apri tavolo tecnico. Tutto in parallelo.', type:'c', pts:15 },
+        { key:'D', text:'Deleghi il piano comunicazione al Service Desk e il tavolo tecnico al tecnico: ognuno sa cosa fare nel suo ambito.', type:'p', pts:5 }
+      ],
+      tech:[
+        { key:'A', text:'Vai direttamente al workaround: è il più rapido e sei convinto che funzioni.', type:'p', pts:5 },
+        { key:'B', text:'Vai alla soluzione definitiva: il workaround è una pezza temporanea, meglio risolvere una volta sola.', type:'p', pts:4 },
+        { key:'C', text:'Aspetti l\'approvazione formale del MIM e del cliente prima di fare qualsiasi intervento.', type:'x', pts:2 },
+        { key:'D', text:'Presenti al MIM entrambe le opzioni (workaround 45 min vs definitivo 2-3h) con rischi, benefici e prerequisiti, e procedi con la scelta condivisa.', type:'c', pts:15 }
+      ],
+      sd:[
+        { key:'A', text:'Gestisci ogni ticket separatamente per non perdere nessuna segnalazione: la granularità è importante.', type:'p', pts:4 },
+        { key:'B', text:'Colleghi tutti i 18 ticket come child del MI master, blocchi i duplicati, aggiorni il log MI con tutti gli eventi e fornisci al bridge una vista consolidata.', type:'c', pts:15 },
+        { key:'C', text:'Chiudi i ticket duplicati senza collegarli al MI: meno ticket aperti, meno confusione nel sistema.', type:'x', pts:0 },
+        { key:'D', text:'Deleghi la gestione ticket al secondo livello e ti concentri solo sul MI master e sulla comunicazione con il bridge.', type:'p', pts:3 }
+      ]
+    },
+    feedback:{
+      mim:{
+        c:'Corretto. Il piano comunicazione non aspetta l\'ETA tecnico: si struttura con "update ogni 30 min" e si aggiorna. La prima comunicazione al cliente con accordi e coordinate è il passo 3 dell\'Avvio. Tutto in parallelo, non in sequenza.',
+        p:'Parziale. Delegare senza coordinamento o aspettare la chiarezza tecnica prima di comunicare lascia il cliente nel buio. Il MIM è responsabile della comunicazione — non può delegarla senza definirne la struttura.',
+        x:'Errore. Aspettare l\'ETA per comunicare è Low Road: si rimanda per paura di dare informazioni incomplete. Ma il cliente con 150 VM offline ha bisogno di sapere subito che il processo è attivo.'
+      },
+      tech:{
+        c:'Corretto. Presentare le opzioni con rischi e benefici al MIM è il ruolo del tecnico. La decisione finale spetta al MIM che deve considerare anche l\'impatto comunicativo verso il cliente e gli SLA.',
+        p:'Parziale. Scegliere da soli senza condivisione porta ad azioni non allineate con le aspettative già comunicate al cliente. Il MIM potrebbe aver già comunicato una stima diversa.',
+        x:'Errore. Aspettare l\'approvazione formale per tutto rallenta inutilmente. Preparare le opzioni è autonomia corretta del tecnico — l\'approvazione serve per la scelta finale, non per l\'analisi.'
+      },
+      sd:{
+        c:'Corretto. MI master con child ticket è la struttura giusta: vista unificata, no duplicati, log continuo. Il bridge ha un unico punto di verità invece di inseguire 18 ticket separati. Senza questa struttura il MI Report finale è impossibile.',
+        p:'Parziale. Ticket separati sembrano precisi ma frammentano la vista MI. Il report finale sarà impossibile da costruire, la problem determination complicata.',
+        x:'Errore. Chiudere ticket senza collegarli al MI distrugge la traccia dell\'incidente. Delegare senza strutturare crea silos. Quei 18 ticket sono la storia di ciò che è successo ad Acme.'
+      }
+    },
+    bonus:{
+      condition: ch => ch.mim?.type==='c' && ch.sd?.type==='c',
+      groups:['mim','sd'], pts:5,
+      title:'🎯 COORDINAMENTO MIM + SERVICE DESK',
+      body:'Il MIM ha strutturato piano comunicazione e tavoli in parallelo, il Service Desk ha costruito la struttura MI con child ticket e log consolidato. Il framework del processo funziona. +5 punti per MIM e Service Desk!'
+    },
+    consequence: ch => {
+      const m=ch.mim?.type==='c', t=ch.tech?.type==='c';
+      if(m&&t) return `Piano strutturato e opzioni tecniche condivise con il MIM. <strong>Il cliente ha già ricevuto la prima comunicazione con la cadenza degli aggiornamenti.</strong> Entrate nella Fase 3 con tutto il processo attivo.`;
+      if(m&&!t) return `Piano di comunicazione attivo, ma <strong>il tecnico ha agito in autonomia senza condivisione.</strong> Il rischio: le stime già comunicate al cliente potrebbero non allinearsi con le tempistiche reali.`;
+      if(!m) return `<strong>Il piano di comunicazione non è strutturato e il cliente non ha ancora ricevuto nulla.</strong> L'Esecuzione inizierà con il cliente che chiama ogni 10 minuti senza risposta strutturata.`;
+      return `<strong>Avvio parziale.</strong> L'Esecuzione partirà con lacune su più fronti: comunicazione non strutturata, decisioni tecniche non condivise.`;
+    }
+  },
+
+  // ── FASE 2: ESECUZIONE ──
+  {
+    name:'ESECUZIONE', time:540,
+    fac_scenario:`<strong>00:30.</strong> Il workaround ha riportato online 80 VM su 150. Le restanti 70 (modulo produzione) sono ancora giù. Serve la sostituzione hardware del controller: il vendor stima 90 minuti dall'approvazione. Il management di Acme chiama il MIM direttamente. Il Service Desk deve gestire ticket vendor e blocco di processo.`,
+    inject:`⚠ INJECT — 00:30: 80/150 VM online dopo workaround. 70 VM modulo produzione ancora offline. Vendor stima 90 min per sostituzione hardware. // Il management Acme chiama direttamente il MIM chiedendo un ETA preciso da dare al CEO.`,
+    reveal_title:'Come avete gestito l\'esecuzione sotto pressione?',
+    reveal_sub:'ETA impossibili, decisioni tecniche, escalation vendor: le scelte più difficili del MI.',
+    debrief_questions:[
+      { role:'MIM', q:'Quando è giusto dare un ETA e quando è sbagliato prometterlo? Come si gestisce il management di un cliente sotto pressione?' },
+      { role:'TECNICO', q:'Come si decide tra una soluzione rapida e rischiosa e una definitiva e lenta, di notte, durante un MI attivo?' },
+      { role:'SERVICE DESK', q:'Quando il processo si blocca per mancanza di approvazione: chi sblocca e come? Qual è il ruolo del SD?' },
+    ],
+    narratives:{
+      mim:`<strong>00:30.</strong> Workaround attivo: 80 VM online, 70 ancora giù. Il management di Acme ti chiama: <em>"Sono le 00:30. I miei sistemi sono giù da un'ora. Quando finisce? Ho bisogno di una risposta da dare al mio CEO adesso."</em> Hai la stima del vendor: 90 minuti dall'approvazione. Non è garantita.`,
+      tech:`<strong>00:25.</strong> 80/150 VM online. Le 70 VM di produzione ancora offline. Serve la sostituzione fisica del controller — solo il vendor può farlo. Vendor stima 90 min dall'approvazione. Hai un'alternativa: rerouting su storage secondario (30 min, rischio medio-alto di instabilità). Cosa proponi al MIM?`,
+      sd:`<strong>00:30.</strong> Il MI ticket ha 67 ticket child. Il vendor ha aperto il proprio incident interno. Il bridge tecnico chiede: <em>"Il tecnico sta aspettando l'approvazione per la sostituzione hardware — chi deve approvarla? Il processo è bloccato."</em> E arriva un'altra segnalazione: il management Acme sta cercando di aprire ticket separati direttamente.`
+    },
+    questions:{
+      mim:'Il management Acme chiede un ETA preciso da dare al CEO. Come rispondi?',
+      tech:'Vendor 90 min (certo) o storage secondario 30 min (rischioso). Come procedi?',
+      sd:'Processo bloccato per approvazione mancante e ticket separati del management Acme. Come gestisci?'
+    },
+    choices:{
+      mim:[
+        { key:'A', text:'"Sistemi completamente ripristinati entro 45 minuti, garantito." — per dare fiducia e chiudere la pressione immediata.', type:'x', pts:0 },
+        { key:'B', text:'Trasferisci la chiamata al tecnico: è l\'unico che può dare una stima tecnica precisa in questo momento.', type:'x', pts:0 },
+        { key:'C', text:'Chiedi al management Acme di mandarti la richiesta via email e li richiami entro 15 minuti: ti serve tempo per allinearti con il tecnico.', type:'p', pts:4 },
+        { key:'D', text:'"Stima attuale: 90 minuti per la soluzione definitiva, non garantita. 80 VM sono già online. Il team lavora con il vendor. Prossimo aggiornamento formale tra 30 minuti."', type:'c', pts:15 }
+      ],
+      tech:[
+        { key:'A', text:'Presenti al MIM entrambe le opzioni con rischi quantificati: vendor 90 min certo vs storage secondario 30 min rischio instabilità. Procedi con la scelta del MIM.', type:'c', pts:15 },
+        { key:'B', text:'Vai direttamente alla sostituzione vendor: è l\'unica soluzione definitiva, il rischio del storage secondario non vale.', type:'p', pts:6 },
+        { key:'C', text:'Provi il rerouting su storage secondario in autonomia: 30 min contro 90 sono troppi con la produzione ferma.', type:'p', pts:4 },
+        { key:'D', text:'Aspetti che il MIM e il cliente approvino formalmente entrambe le opzioni prima di procedere con qualsiasi cosa.', type:'p', pts:3 }
+      ],
+      sd:[
+        { key:'A', text:'Approvi tu stesso la procedura vendor sul ticket: il processo non può bloccarsi per una formalità burocratica quando la produzione è ferma.', type:'x', pts:0 },
+        { key:'B', text:'Aggiorni il MI ticket con il riferimento al vendor incident, identifichi nel processo chi ha il mandato di approvazione (il MIM), comunichi al bridge: "Approvazione richiesta al MIM — in attesa." Per i ticket del management Acme: li colleghi al MI master come child ticket.', type:'c', pts:15 },
+        { key:'C', text:'Aspetti che il tecnico risolva da solo il problema dell\'approvazione: è una questione tecnica, il SD non deve interferire.', type:'x', pts:0 },
+        { key:'D', text:'Mandi un\'email a tutti i ruoli coinvolti chiedendo chi ha il mandato di approvazione: vuoi coprire tutte le basi.', type:'p', pts:5 }
+      ]
+    },
+    feedback:{
+      mim:{
+        c:'Corretto. Non garantire ciò che non puoi controllare è una regola fondamentale del processo MI. "Stima 90 min non garantita" con aggiornamento parziale (80 VM già online) è onesto e professionale. Una promessa non mantenuta alle 01:30 di notte è una crisi nella crisi.',
+        p:'Parziale. Chiedere 15 minuti gestisce la pressione ma rischia di sembrare un\'evasione. Il management Acme interpreta i silenzi come mancanza di controllo.',
+        x:'Errore. Garantire ETA certi che non puoi controllare è Low Road: si vuole fermare la pressione immediata, ma si crea un problema peggiore quando la promessa non viene mantenuta. Trasferire la chiamata al tecnico significa che il MIM ha perso il controllo della comunicazione.'
+      },
+      tech:{
+        c:'Corretto. Portare le opzioni con rischi quantificati al MIM è il ruolo del tecnico. La decisione finale spetta al MIM che deve bilanciare rischio tecnico, SLA e aspettative del cliente già comunicate.',
+        p:'Parziale. Scegliere da soli senza condivisione può portare ad azioni non allineate con le aspettative già comunicate al cliente dal MIM. Il coordinamento non è burocrazia — è High Road.',
+        x:'Parziale. Aspettare approvazione per tutto rallenta inutilmente. Il tecnico può preparare le opzioni autonomamente — l\'approvazione è solo sulla scelta finale, non sull\'analisi.'
+      },
+      sd:{
+        c:'Corretto. Il SD ha il ruolo di identificare i blocchi di processo e portarli al MIM — non approva, non delega in modo dispersivo. Per i ticket separati del management: collegarli al MI master è l\'unico modo per mantenere la vista unificata.',
+        p:'Parziale. L\'email a tutti è dispersiva e genera confusione su chi deve rispondere. Il punto di escalation è sempre il MIM.',
+        x:'Errore. Il SD non ha il mandato di approvare interventi hardware. Aspettare passivamente che il tecnico si arrangi lascia il processo bloccato senza che nessuno lo stia gestendo.'
+      }
+    },
+    bonus:{
+      condition: ch => ch.mim?.type==='c' && ch.tech?.type==='c',
+      groups:['mim','tech'], pts:5,
+      title:'🎯 COORDINAMENTO MIM + TECNICO',
+      body:'Il MIM ha gestito le aspettative con onestà professionale e il Tecnico ha presentato le opzioni strutturate per una decisione condivisa. La High Road in azione: struttura che protegge la qualità della risposta. +5 punti per MIM e Tecnico!'
+    },
+    consequence: ch => {
+      const m=ch.mim?.type==='c', t=ch.tech?.type==='c';
+      if(m&&t) return `Aspettative gestite onestamente, decisione tecnica condivisa. <strong>Acme è frustrata ma sa che Elmec sta lavorando con professionalità e struttura.</strong> Entrate nella Chiusura con credibilità intatta.`;
+      if(m&&!t) return `MIM ha risposto bene, ma <strong>il tecnico ha agito senza condivisione.</strong> Le tempistiche reali potrebbero non allinearsi con le stime già comunicate. La chiusura richiederà gestione attiva delle aspettative.`;
+      if(!m) return `<strong>Una promessa di ETA irrealistica o il trasferimento della chiamata al tecnico ha compromesso la fiducia del management Acme.</strong> La chiusura dovrà ricostruire la relazione oltre che chiudere il MI.`;
+      return `<strong>Esecuzione con criticità multiple.</strong> Il ripristino tecnico è in corso ma la gestione delle aspettative ha lasciato ferite aperte che la chiusura dovrà gestire.`;
+    }
+  },
+
+  // ── FASE 3: CHIUSURA ──
+  {
+    name:'CHIUSURA', time:420,
+    fac_scenario:`<strong>02:20.</strong> Il vendor ha sostituito il controller guasto. Tutte le 150 VM sono online. Il referente IT di Acme conferma che i sistemi funzionano. Root cause definitiva: bug firmware rilasciato dal vendor il 3 marzo ha disabilitato il failover automatico. Ora va chiuso il MI secondo il processo Elmec: congiunto MIM-cliente → problem determination → MI Report con tool apposito → chiusura ticket.`,
+    inject: null,
+    reveal_title:'Come avete chiuso il Major Incident?',
+    reveal_sub:'Chiusura congiunta, problem determination, MI Report, ticket: tutto nell\'ordine corretto?',
+    debrief_questions:[
+      { role:'MIM', q:'Perché la chiusura "congiunta" con il cliente è obbligatoria? Cosa si perde se si salta questo passaggio?' },
+      { role:'TECNICO', q:'Chi deve sapere che il bug firmware potrebbe impattare altri clienti? Come si attiva questa segnalazione nel processo?' },
+      { role:'SERVICE DESK', q:'Perché il MI Report va compilato subito con il tool apposito e non "quando si ha tempo"? Cosa si perde se si ritarda?' },
+    ],
+    narratives:{
+      mim:`<strong>02:20.</strong> Tutte le <strong>150 VM sono online.</strong> Il referente IT di Acme ha confermato. Il processo Elmec prevede una chiusura formale: <em>deve avvenire congiuntamente tra un unico interlocutore del cliente e il Major Incident Manager</em>. Vengono poi aperte eventuali problem determination e redatto il MI Report. Come procedi?`,
+      tech:`<strong>02:18.</strong> Sistemi online. <strong>Root cause definitiva: bug firmware vendor del 3 marzo</strong> ha disabilitato il failover automatico. Hai tutto documentato nei log. Lo stesso firmware potrebbe essere installato su storage di altri clienti. Cosa fai con queste informazioni?`,
+      sd:`<strong>02:22.</strong> Sistemi operativi. MI ticket: 67 child ticket, log completo, ticket vendor chiuso. Il processo Elmec prevede passi specifici per la chiusura formale nell'ordine corretto. Come esegui la chiusura?`
+    },
+    questions:{
+      mim:'Come chiudi formalmente il MI secondo il processo Elmec?',
+      tech:'Hai la root cause definitiva e sai che altri clienti potrebbero essere a rischio. Cosa fai?',
+      sd:'Quali sono i passi obbligatori della chiusura formale nell\'ordine corretto?'
+    },
+    choices:{
+      mim:[
+        { key:'A', text:'Chiudi il ticket non appena i monitor tornano verdi e il cliente ha confermato telefonicamente: il processo è completato.', type:'x', pts:0 },
+        { key:'B', text:'Aspetti la mattina per chiudere formalmente: è passata la mezzanotte, meglio farlo in orario di ufficio con tutti presenti.', type:'x', pts:0 },
+        { key:'C', text:'Deleghi tutta la chiusura al Service Desk: sanno cosa fare e hai bisogno di riposarti dopo 3 ore di MI.', type:'p', pts:4 },
+        { key:'D', text:'Chiudi congiuntamente con il referente IT di Acme (chiamata telefonica), apri la problem determination, mandi il mandato al SD per compilare il MI Report con il tool apposito, poi chiudi il ticket MI.', type:'c', pts:15 }
+      ],
+      tech:[
+        { key:'A', text:'Mandi la root cause via email al tuo manager: il MI è chiuso, ci penserà lui a valutare se ci sono altri clienti impattati.', type:'x', pts:0 },
+        { key:'B', text:'Documenti la root cause solo nel ticket MI: è sufficiente per la problem determination di questo incidente.', type:'p', pts:5 },
+        { key:'C', text:'Non documenti ancora: serve un\'analisi più approfondita prima di fare affermazioni sulla root cause.', type:'x', pts:0 },
+        { key:'D', text:'Documenti la root cause completa nel ticket MI, apri il ticket di problem determination con tutti i dettagli tecnici, e segnali proattivamente al MIM che lo stesso firmware potrebbe essere su storage di altri clienti.', type:'c', pts:15 }
+      ],
+      sd:[
+        { key:'A', text:'Chiudi il ticket MI master non appena il MIM ti dà l\'ok: è il momento giusto per procedere.', type:'p', pts:4 },
+        { key:'B', text:'Compili il MI Report con il tool apposito (causa, impatto, tempi, azioni), chiudi tutti i 67 ticket child come risolti, chiudi il ticket MI master solo dopo la conferma congiunta MIM-cliente, e avvisi il MIM per la verifica finale.', type:'c', pts:15 },
+        { key:'C', text:'Marchi il ticket come "risolto pending" e lo chiudi formalmente tra qualche giorno, dopo la problem determination: così hai tutto il tempo di documentare bene.', type:'x', pts:0 },
+        { key:'D', text:'Chiudi il ticket master e mandi un riepilogo via email agli stakeholder: non hai tempo per il tool adesso, lo fai domani.', type:'p', pts:3 }
+      ]
+    },
+    feedback:{
+      mim:{
+        c:'Corretto. La chiusura MI Elmec è sempre congiunta con un unico interlocutore del cliente, confermata telefonicamente. Poi: problem determination, mandato al SD per il MI Report, chiusura ticket. L\'ordine non è opzionale — è il processo.',
+        p:'Parziale. Delegare senza la chiusura congiunta col cliente è incompleto: il MIM deve essere presente nella firma finale. Non è un compito che si delega integralmente.',
+        x:'Errore. Chiudere dal sistema senza i passi obbligatori lascia il MI formalmente incompleto: nessuna problem determination, nessun MI Report, nessuna chiusura congiunta. Aspettare la mattina aggrava gli SLA e lascia il cliente senza conferma ufficiale.'
+      },
+      tech:{
+        c:'Corretto. Root cause nel ticket MI, problem determination aperta, segnalazione proattiva per altri clienti potenzialmente esposti. Questo è il valore aggiunto del processo MI: impedire che lo stesso problema si ripeta su altri ambienti. Senza questa segnalazione, altri clienti potrebbero affrontare la stessa notte di fuoco.',
+        p:'Parziale. Documentare solo nel ticket MI senza aprire la problem determination e senza segnalare il rischio per altri clienti è incompleto. La root cause deve servire a migliorare il sistema, non solo a chiudere il ticket.',
+        x:'Errore. Root cause via email è informale e fuori processo. Non documentare perché "serve più analisi" significa che la conoscenza tecnica rimane nella testa del tecnico. La prossima volta, il team riparte da zero.'
+      },
+      sd:{
+        c:'Corretto. L\'ordine è fondamentale: MI Report compilato con il tool apposito → child ticket chiusi → conferma congiunta MIM-cliente → chiusura master. Il Report non si fa "dopo" — è parte integrante della fase di Chiusura, senza di esso non c\'è problem determination possibile.',
+        p:'Parziale. Chiudere su ok del MIM senza MI Report o via email senza tool è incompleto. Il Report Elmec compilato con il tool apposito è un requisito del processo, non documentazione opzionale.',
+        x:'Errore. Tenere aperto il ticket "pending" per giorni distorce i KPI, impedisce la chiusura formale e lascia il cliente senza conferma ufficiale. La problem determination è un processo separato che parte dopo la chiusura del ticket, non una condizione per chiuderlo.'
+      }
+    },
+    bonus:{
+      condition: ch => GIDS.every(g => ch[g]?.type==='c'),
+      groups:GIDS, pts:10,
+      title:'🏆 CHIUSURA PERFETTA — TUTTI I GRUPPI',
+      body:'MIM ha chiuso congiuntamente con il cliente, il Tecnico ha documentato la root cause e segnalato il rischio per altri clienti, il Service Desk ha compilato il MI Report con il tool e chiuso nell\'ordine corretto. +10 punti a tutti! Questo è il livello High Road che il processo MI è progettato per produrre.'
+    },
+    consequence: ch => {
+      const n=GIDS.filter(g=>ch[g]?.type==='c').length;
+      if(n===3) return `<strong>Chiusura esemplare su tutti i fronti.</strong> Il processo Elmec è stato rispettato in ogni dettaglio. Acme ha la conferma ufficiale, la root cause è documentata, gli altri clienti potenzialmente esposti sono stati segnalati. La High Road ha funzionato.`;
+      if(n===2) return `<strong>Chiusura parzialmente corretta.</strong> Due ruoli su tre hanno rispettato il processo. Le lacune si tradurranno in documentazione incompleta, problem determination difficile — e probabilmente lo stesso bug firmware impatterà un altro cliente tra qualche settimana.`;
+      return `<strong>Il MI è tecnicamente chiuso, ma il processo no.</strong> Senza MI Report, senza problem determination, senza chiusura congiunta: non c\'è apprendimento, non c\'è traccia, non c\'è miglioramento. La prossima notte di fuoco ripartirà da zero.`;
+    }
+  }
+];
+
+// ═══════════ STATE ═══════════
+let currentPhase=-1, currentStep=0;
+let scores={mim:0,tech:0,sd:0}, bonusPts={mim:0,tech:0,sd:0};
+let answers={}, timerInt=null, timerTotal=0;
+
+// ═══════════ HELPERS ═══════════
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+id);
+  if(el) el.classList.add('active');
+}
+function clearTimer(){clearInterval(timerInt);}
+function fmt(r){const m=Math.floor(r/60),s=r%60;return`${m}:${s.toString().padStart(2,'0')}`;}
+function tcolor(r){const p=r/timerTotal;return p>.5?'#39e87a':p>.25?'#ffb800':'#ff4a4a';}
+function startTimer(sec,tickCb,endCb){
+  clearTimer();timerTotal=sec;let r=sec;
+  if(tickCb)tickCb(r);
+  timerInt=setInterval(()=>{r--;if(tickCb)tickCb(r);if(r<=0){clearTimer();if(endCb)endCb();}},1000);
+}
+
+const AGENDA_TIMES=['0:00','0:12','0:23','0:35','0:43','0:58','1:10'];
+function toggleAgenda(){
+  const ov=document.getElementById('overlay-agenda');
+  document.getElementById('ag-rows').innerHTML=AGENDA.map((a,i)=>
+    `<div class="ag-row ${currentStep>a.step?'done':''} ${currentStep===a.step?'cur':''}">
+      <div class="ag-time">${AGENDA_TIMES[i]}</div>
+      <div class="ag-name">${a.label}</div>
+      <div class="ag-dur">${a.dur}</div>
+    </div>`).join('');
+  ov.classList.toggle('open');
+}
+
+// ═══════════ BRIEFING ═══════════
+function startBriefing(){
+  currentStep=1;show('briefing');
+  document.getElementById('tb-phase').textContent='BRIEFING';
+  startTimer(720,r=>{
+    const el=document.getElementById('brief-timer'),fi=document.getElementById('brief-fill');
+    if(el){el.textContent=fmt(r);el.style.color=tcolor(r);}
+    if(fi){fi.style.width=(r/720*100)+'%';fi.style.background=tcolor(r);}
+  });
+}
+
+// ═══════════ PHASE ═══════════
+function startPhase(idx){
+  clearTimer();currentPhase=idx;answers={};
+  currentStep=idx<2?2+idx:idx===2?5:6;
+  const ph=PHASES[idx];
+  document.getElementById('tb-phase').textContent=`FASE ${idx+1}/4 — ${ph.name}`;
+  ['pht0','pht1','pht2','pht3'].forEach((id,i)=>{
+    const el=document.getElementById(id);el.className='pht';
+    if(i<idx)el.classList.add('done');else if(i===idx)el.classList.add('active');
+  });
+  document.getElementById('ph-eye').textContent=`FASE ${idx+1} / 4`;
+  document.getElementById('ph-name').textContent=ph.name;
+  document.getElementById('ph-scen-lbl').textContent=`▸ SCENARIO — ${ph.name}`;
+  document.getElementById('ph-scen-txt').innerHTML=ph.fac_scenario;
+  const ib=document.getElementById('inject-banner');
+  if(ph.inject){ib.style.display='block';ib.innerHTML=ph.inject;}else ib.style.display='none';
+  renderCards(idx);updateCount();show('phase');
+  startTimer(ph.time,r=>{
+    const el=document.getElementById('ph-tbig'),fi=document.getElementById('ph-tfill');
+    if(el){el.textContent=fmt(r);el.style.color=tcolor(r);}
+    if(fi)fi.style.width=(r/ph.time*100)+'%';
+  });
+}
+
+function renderCards(idx){
+  const ph=PHASES[idx];
+  document.getElementById('roles-grid').innerHTML=GIDS.map(gid=>{
+    const g=GROUPS[gid];
+    const inj=ph.injects?.[gid];
+    return`<div class="role-card" id="rcard-${gid}" style="border-top:3px solid ${g.color}">
+      <div class="rc-head">
+        <div class="rc-name" style="color:${g.color}">${g.icon} ${g.label} — ${g.name}</div>
+        <div class="rc-badge" id="rbadge-${gid}">in gioco</div>
+      </div>
+      <div class="rc-body">
+        ${inj?`<div class="rc-inject">${inj}</div>`:''}
+        <div class="rc-narr">${ph.narratives[gid]}</div>
+        <div class="rc-q">${ph.questions[gid]}</div>
+        <div class="rc-choices">${ph.choices[gid].map((c,i)=>`
+          <div class="rc-choice" id="rch-${gid}-${i}" onclick="selectAnswer('${gid}',${i})">
+            <span class="rc-ck">${c.key}</span><span class="rc-ct">${c.text}</span>
+          </div>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectAnswer(gid,idx){
+  const ph=PHASES[currentPhase],c=ph.choices[gid][idx];
+  ph.choices[gid].forEach((_,i)=>{const el=document.getElementById(`rch-${gid}-${i}`);if(el)el.className='rc-choice';});
+  const el=document.getElementById(`rch-${gid}-${idx}`);
+  if(el)el.classList.add('sel-'+c.type);
+  answers[gid]={...c,idx};
+  const card=document.getElementById('rcard-'+gid);
+  const badge=document.getElementById('rbadge-'+gid);
+  if(card){card.classList.add('answered');card.style.borderColor=c.type==='c'?'var(--comm)':c.type==='p'?'var(--sd)':'var(--mim)';}
+  if(badge){badge.textContent=`${c.key} ✓`;badge.classList.add('done');}
+  updateCount();
+}
+
+function resetPhaseAnswers(){answers={};renderCards(currentPhase);updateCount();}
+
+function updateCount(){
+  const n=Object.keys(answers).length;
+  document.getElementById('ph-answered').innerHTML=`Risposte: <b>${n} / 3</b> — ${n<3?'I gruppi discutono e si alzano per scegliere':'Tutte le risposte raccolte — pronto per il reveal'}`;
+  const btn=document.getElementById('ph-reveal-btn');
+  if(n===3)btn.classList.remove('btn-disabled');else btn.classList.add('btn-disabled');
+}
+
+// ═══════════ REVEAL ═══════════
+function showReveal(){
+  clearTimer();const ph=PHASES[currentPhase];
+  GIDS.forEach(g=>{if(answers[g])scores[g]+=answers[g].pts;});
+  let bonusOk=false;
+  if(ph.bonus.condition(answers)){
+    bonusOk=true;
+    ph.bonus.groups.forEach(g=>{scores[g]+=ph.bonus.pts;bonusPts[g]+=ph.bonus.pts;});
+  }
+  document.getElementById('rv-eyebrow').textContent=`REVEAL — FASE ${currentPhase+1} — ${ph.name}`;
+  document.getElementById('rv-h2').textContent=ph.reveal_title;
+  document.getElementById('rv-sub').textContent=ph.reveal_sub;
+  document.getElementById('rv-cards').innerHTML=GIDS.map((gid,di)=>{
+    const g=GROUPS[gid],ch=answers[gid];
+    const tc=ch?.type==='c'?'rvc':ch?.type==='p'?'rvp':'rvx';
+    const ico=ch?.type==='c'?'✓':ch?.type==='p'?'△':'✗';
+    const fbk=ch?.type==='c'?'c':ch?.type==='p'?'p':'x';
+    return`<div class="rv-card ${tc}" style="animation-delay:${di*.07}s">
+      <div class="rv-grp" style="color:${g.color}">${g.icon} ${g.label} — ${g.name}</div>
+      <div class="rv-chosen">${ico} <strong>${ch?.key}.</strong> ${ch?.text||'—'}</div>
+      <div class="rv-fb">${ph.feedback[gid][fbk]||ph.feedback[gid].c}</div>
+      <div class="rv-pts">+${ch?.pts??0} pts</div>
+    </div>`;
+  }).join('');
+  const bb=document.getElementById('bonus-box');
+  if(bonusOk){bb.style.display='block';document.getElementById('bonus-title').textContent=ph.bonus.title;document.getElementById('bonus-body').textContent=ph.bonus.body;}
+  else bb.style.display='none';
+  document.getElementById('cq-txt').innerHTML=ph.consequence(answers);
+  renderSB();
+  document.getElementById('dq-list').innerHTML=ph.debrief_questions.map(dq=>`<div class="dq-item"><b>${dq.role}:</b><span>${dq.q}</span></div>`).join('');
+  const isLast=currentPhase>=3;
+  document.getElementById('rv-next-btn').textContent=isLast?'Vedi risultati finali →':currentPhase===1?'☕ Pausa caffè →':`Fase ${currentPhase+2} — ${PHASES[currentPhase+1].name} →`;
+  show('reveal');
+}
+
+function renderSB(){
+  const sorted=[...GIDS].sort((a,b)=>scores[b]-scores[a]);
+  document.getElementById('sb-rows').innerHTML=sorted.map(gid=>{
+    const g=GROUPS[gid],pct=Math.min(100,scores[gid]/65*100);
+    return`<div class="sb-row">
+      <div class="sb-name" style="color:${g.color}">${g.icon} ${g.name}</div>
+      <div class="sb-bar-w"><div class="sb-bar" data-pct="${pct}" style="background:${g.bar}"></div></div>
+      <div class="sb-val">${scores[gid]}${bonusPts[gid]>0?` <span style="color:var(--sd);font-size:9px">(+${bonusPts[gid]}⭐)</span>`:''}</div>
+    </div>`;
+  }).join('');
+  setTimeout(()=>document.querySelectorAll('.sb-bar').forEach(b=>b.style.width=b.dataset.pct+'%'),150);
+}
+
+function goNext(){
+  if(currentPhase>=3){showFinal();return;}
+  if(currentPhase===1){startBreak();return;}
+  startPhase(currentPhase+1);
+}
+
+// ═══════════ BREAK ═══════════
+function startBreak(){
+  currentStep=4;document.getElementById('tb-phase').textContent='☕ PAUSA';show('break');
+  startTimer(480,r=>{
+    const el=document.getElementById('brk-timer'),fi=document.getElementById('brk-fill');
+    if(el){el.textContent=fmt(r);el.style.color=tcolor(r);}
+    if(fi)fi.style.width=(r/480*100)+'%';
+  },()=>startPhase(2));
+}
+
+// ═══════════ FINAL ═══════════
+function showFinal(){
+  currentStep=7;document.getElementById('tb-phase').textContent='DEBRIEF FINALE';
+  const sorted=[...GIDS].sort((a,b)=>scores[b]-scores[a]);
+  const medals=['🥇','🥈','🥉'];
+  document.getElementById('podium').innerHTML=sorted.map((gid,i)=>{
+    const g=GROUPS[gid];
+    return`<div class="pod ${i===0?'winner':''}" style="animation-delay:${i*.09}s">
+      <div class="pod-medal">${medals[i]}</div>
+      <div class="pod-name" style="color:${g.color}">${g.icon} ${g.name}</div>
+      <div class="pod-score" style="color:${g.color}">${scores[gid]}</div>
+      <div class="pod-bonus">+${bonusPts[gid]} bonus coordinamento</div>
+    </div>`;
+  }).join('');
+  show('final');
+}
+
+// ═══════════ RESET ═══════════
+function resetAll(){
+  clearTimer();currentPhase=-1;currentStep=0;
+  scores={mim:0,tech:0,sd:0};bonusPts={mim:0,tech:0,sd:0};answers={};
+  document.getElementById('tb-phase').textContent='';show('welcome');
+}
+</script>
+</body>
+</html>
