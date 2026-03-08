@@ -361,7 +361,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <div class="wlc-sc">
       <div class="wsc-badge s2">SCENARIO 2 — MI CLIENTE RESP. ELMEC</div>
       <div class="wsc-name s2">⚠️ AGGIORNAMENTO CRITICO</div>
-      <div class="wsc-desc"><strong>08:15, venerdì.</strong> Un aggiornamento firmware Elmec della notte ha reso offline 12 VM di <strong>Beta Corporation</strong>. 2 fasi chiave: Dichiarazione proattiva + Chiusura con responsabilità.</div>
+      <div class="wsc-desc"><strong>08:15, venerdì.</strong> Un aggiornamento firmware Elmec della notte ha reso offline 12 VM di <strong>Beta Corporation</strong>. 4 fasi complete: Dichiarazione proattiva → Avvio → Esecuzione → Chiusura con responsabilità.</div>
     </div>
   </div>
   <div class="wlc-roles">
@@ -427,7 +427,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       </div>
     </div>
     <div class="bf-panel bf-panel-full">
-      <div class="bp-lbl">▸ PROCESSO HIGH-LEVEL — LE 4 FASI (SCENARIO 1 COMPLETO, SCENARIO 2: F1+F4)</div>
+      <div class="bp-lbl">▸ PROCESSO HIGH-LEVEL — LE 4 FASI (ENTRAMBI GLI SCENARI COMPLETI)</div>
       <div class="phases-row">
         <div class="ph-cell p0">1 — DICHIARAZIONE<br><span style="font-size:7px;color:var(--dim2)">Congiunta • Telefonica • Ticket</span></div>
         <div class="ph-cell p1">2 — AVVIO<br><span style="font-size:7px;color:var(--dim2)">MIM • Procedura • Comunicazione • Tavoli</span></div>
@@ -876,7 +876,145 @@ const SCENARIOS = [
           return`<strong>Né dichiarazione proattiva né ticket corretto.</strong> Il processo MI per responsabilità Elmec non è partito.`;
         }
       },
-      // S2-F1: CHIUSURA
+      // S2-F1: AVVIO
+      {
+        name:'AVVIO', time:420,
+        fac_scenario:`<strong>08:20.</strong> MI Cliente con responsabilità Elmec dichiarato. Il tecnico ha avviato il rollback firmware: 3 VM su 12 già tornate online. Il referente IT di Beta Corporation ha ricevuto la chiamata di Elmec — sorpreso ma in ascolto. Ora bisogna strutturare l'<strong>Avvio</strong> con una differenza chiave rispetto al MI Elmec: il piano di comunicazione include fin dall'inizio il riconoscimento della responsabilità Elmec.`,
+        inject:`⚠ INJECT — Rollback in corso: 3/12 VM online. ETA rollback completo: 45 min. Vendor ha confermato il bug firmware — documentazione disponibile. Bridge tecnico aperto.`,
+        reveal_title:'Come avete strutturato l\'Avvio con responsabilità Elmec?',
+        reveal_sub:'Il piano di comunicazione riflette che la causa è Elmec? La struttura tecnica è coordinata?',
+        debrief_questions:[
+          { role:'MIM', q:'Come cambia il piano di comunicazione quando la causa è Elmec? "Ogni 30 min vi aggiorniamo" è sufficiente o serve qualcosa di diverso?' },
+          { role:'TECNICO', q:'Quando hai causato tu il problema, l\'impulso è "risolvo in silenzio". Perché il processo dice di condividere tutto con il MIM prima?' },
+          { role:'SERVICE DESK', q:'Il change record che ha causato il MI: come si lega al ticket MI? Perché è importante farlo subito e non dopo?' }
+        ],
+        narratives:{
+          mim:`<strong>08:20.</strong> MI dichiarato proattivamente. Rollback in corso, 3 VM già online. Il referente IT di Beta Corporation è in attesa — sa che Elmec ha causato il problema. Devi strutturare il piano di comunicazione: strumenti, cadenza, attori. Con una differenza rispetto al MI Elmec: <strong>il riconoscimento della responsabilità è parte integrante della prima comunicazione formale.</strong>`,
+          tech:`<strong>08:18.</strong> Rollback in corso, 3/12 VM online. ETA rollback completo: <strong>45 minuti.</strong> Il vendor ha confermato il bug firmware — hai tutta la documentazione tecnica. Il MIM sta strutturando le comunicazioni verso il cliente. Cosa prepari per il bridge tecnico e cosa comunichi al MIM?`,
+          sd:`<strong>08:20.</strong> Ticket "MI Cliente con responsabilità Elmec" aperto. Tre ticket da utenti Beta Corporation già in coda. Il change record del firmware applicato alle 02:00 è nel sistema. Il bridge chiede aggiornamenti. Come strutturi il processo quando la causa è un tuo change?`
+        },
+        questions:{
+          mim:'Come strutturi il piano di comunicazione quando la responsabilità è di Elmec?',
+          tech:'Hai tutti i dettagli tecnici. Cosa prepari per il bridge e per il MIM?',
+          sd:'Come colleghi il change record causale e gestisci i ticket in arrivo?'
+        },
+        choices:{
+          mim:[
+            { key:'A', text:'Aspetti che il rollback sia completato prima di strutturare il piano: meglio avere una buona notizia da dare subito al cliente.', type:'x', pts:0 },
+            { key:'B', text:'Strutturi piano comunicazione con aggiornamenti ogni 30 min, prima comunicazione formale al referente IT con: cosa è successo, responsabilità Elmec, rollback in corso, ETA 45 min, prossimo aggiornamento tra 30 min. Coinvolgi CSM.', type:'c', pts:15 },
+            { key:'C', text:'Chiami il referente IT ma minimizzi la responsabilità Elmec nella prima comunicazione: meglio aspettare di avere tutti i dettagli prima di ammettere qualcosa.', type:'x', pts:0 },
+            { key:'D', text:'Deleghi tutta la comunicazione al CSM: è una questione di relazione commerciale, è il suo territorio.', type:'p', pts:4 }
+          ],
+          tech:[
+            { key:'A', text:'Ti concentri solo sul rollback: finché le VM sono offline non c\'è tempo per documentazione o report.', type:'p', pts:4 },
+            { key:'B', text:'Prepari riepilogo tecnico completo per il MIM (cosa è stato applicato, cosa è successo, rollback progress, ETA), apri bridge strutturato con SAL ogni 20 min, segnali al MIM che il vendor bug va documentato formalmente.', type:'c', pts:15 },
+            { key:'C', text:'Aspetti che il rollback sia completato prima di preparare qualsiasi documentazione: non vuoi scrivere cose che potrebbero cambiare.', type:'p', pts:3 },
+            { key:'D', text:'Procedi con rollback autonomamente senza aggiornare nessuno: sai esattamente cosa fare, ogni interruzione rallenta.', type:'x', pts:0 }
+          ],
+          sd:[
+            { key:'A', text:'Colleghi il change record come riferimento causale nel ticket MI, apri sub-ticket per tracking bug vendor, aggiorni il log MI con avanzamento rollback ogni 15 min, avvisi il MIM.', type:'c', pts:15 },
+            { key:'B', text:'Gestisci i ticket utenti separatamente dal MI: troppa roba nello stesso ticket crea confusione.', type:'p', pts:4 },
+            { key:'C', text:'Aspetti che il rollback sia completato prima di fare ticketing: non vuoi documentare un problema che potrebbe risolversi da solo.', type:'x', pts:0 },
+            { key:'D', text:'Chiedi al MIM come gestire il change record: è una situazione sensibile e non vuoi sbagliare il collegamento.', type:'p', pts:5 }
+          ]
+        },
+        feedback:{
+          mim:{
+            c:'Corretto. Il piano comunicazione non aspetta il rollback. Con responsabilità Elmec la prima comunicazione formale include già il riconoscimento — non come ammissione di colpa ma come gestione trasparente della situazione. Il cliente che riceve "cosa è successo + responsabilità Elmec + cosa stiamo facendo + quando ti ricontatto" è un cliente che mantiene fiducia nonostante l\'errore.',
+            p:'Parziale. Delegare al CSM senza struttura o minimizzare la responsabilità nella prima comunicazione sono entrambi approcci che si ritorcono contro. Il cliente scoprirà la verità — è meglio che la senta da Elmec per prima e in modo strutturato.',
+            x:'Errore. Aspettare il rollback o minimizzare la responsabilità nella prima comunicazione sono le mosse peggiori. Beta Corporation potrebbe scoprire tutto da sola e la perdita di fiducia sarebbe molto più grave del problema tecnico.'
+          },
+          tech:{
+            c:'Corretto. Riepilogo tecnico al MIM + bridge strutturato + segnalazione vendor bug: questo è il contributo del tecnico all\'Avvio. Il MIM non può comunicare bene al cliente senza queste informazioni — e la documentazione del bug vendor serve già ora per la problem determination finale.',
+            p:'Parziale. Concentrarsi solo sul rollback è comprensibile ma incompleto. Il MIM ha bisogno di informazioni tecniche per comunicare al cliente in modo preciso.',
+            x:'Errore. Procedere in autonomia o aspettare prima di documentare lascia il MIM senza informazioni e la problem determination senza basi. Con responsabilità Elmec la trasparenza interna è ancora più critica.'
+          },
+          sd:{
+            c:'Corretto. Il change record collegato fin dall\'inizio è il fondamento della problem determination finale. Sub-ticket vendor, log continuo: la struttura MI con responsabilità Elmec ha bisogno di tracciabilità completa — serve al MI Report ma anche per l\'eventuale SLA credit.',
+            p:'Parziale. Ticket separati o attesa compromettono la visibilità unificata. Il log MI deve riflettere in tempo reale tutto ciò che sta succedendo.',
+            x:'Errore. Aspettare di documentare "per sicurezza" è l\'approccio sbagliato. Il ticket si costruisce mentre l\'incidente evolve, non dopo.'
+          }
+        },
+        bonus:{ condition:ch=>ch.mim?.type==='c'&&ch.tech?.type==='c', groups:['mim','tech'], pts:5, title:'🎯 COMUNICAZIONE RESPONSABILE + BRIDGE TECNICO', body:'Piano comunicazione con riconoscimento Elmec strutturato, bridge tecnico con SAL regolari e documentazione pronta per il MIM. Alta strada — il modo professionale di gestire un errore proprio. +5 punti per MIM e Tecnico!' },
+        consequence:ch=>{
+          const m=ch.mim?.type==='c',t=ch.tech?.type==='c';
+          if(m&&t)return`<strong>Avvio strutturato con trasparenza.</strong> Beta Corporation ha già la prima comunicazione formale con riconoscimento della responsabilità Elmec. Il bridge tecnico ha informazioni precise. La fiducia del cliente è sotto stress ma il processo la protegge.`;
+          if(m&&!t)return`Piano comunicazione corretto ma <strong>il tecnico lavora senza condivisione.</strong> Il MIM potrebbe comunicare stime al cliente che il tecnico non ha validato.`;
+          if(!m)return`<strong>Beta Corporation non ha ancora ricevuto comunicazione strutturata.</strong> Ogni minuto senza risposta formale aumenta la frustrazione — soprattutto sapendo che la causa è Elmec.`;
+          return`<strong>Avvio parziale.</strong> Lacune nella comunicazione o nel coordinamento tecnico, con responsabilità Elmec già nota al cliente.`;
+        }
+      },
+
+      // S2-F2: ESECUZIONE
+      {
+        name:'ESECUZIONE', time:480,
+        fac_scenario:`<strong>09:15.</strong> Il rollback parziale ha riportato online 8 VM su 12. Le 4 VM del modulo ERP di produzione sono ancora offline — il firmware ha corrotto la configurazione di boot, non basta il rollback. Servono 60 min per un restore da backup (con possibile perdita dati dalle 22:00) o 90 min per riconfigurazione manuale (rischio inconsistenza). L'operations manager di Beta Corporation chiama il MIM direttamente.`,
+        inject:`⚠ INJECT — 09:15: 8/12 VM online. 4 VM ERP ancora offline: boot configuration corrotta. Opzioni: restore da backup (60 min, possibile data loss dalle 22:00) vs riconfigurazione manuale (90 min, rischio inconsistenza). // L'operations manager chiama: "Ho 40 persone ferme. Chi ha autorizzato questo aggiornamento? Il mio CEO vuole una risposta."`,
+        reveal_title:'Gestione dell\'escalation con responsabilità Elmec',
+        reveal_sub:'L\'operations manager chiede conto dell\'errore. Come si risponde? Come si decide senza perdere il processo?',
+        debrief_questions:[
+          { role:'MIM', q:'Come si risponde a "chi ha autorizzato questo aggiornamento?" durante un MI attivo? Dove sta il confine tra trasparenza e gestione del danno?' },
+          { role:'TECNICO', q:'Con 40 persone ferme e una scelta difficile tra due opzioni rischiose: come si presenta al MIM senza cedere alla pressione di scegliere da soli?' },
+          { role:'SERVICE DESK', q:'L\'operations manager crea ticket direttamente nel sistema. Come mantenete la visibilità unificata quando l\'escalation bypassa il processo?' }
+        ],
+        narratives:{
+          mim:`<strong>09:15.</strong> 8 VM online, 4 ERP ancora ferme. Il tuo telefono squilla: è l'operations manager di Beta Corporation. <em>"Buongiorno. Ho 40 persone che non lavorano da tre ore. Ho letto il log: voi avete fatto un aggiornamento stanotte. Chi l'ha autorizzato? Il mio CEO mi chiede una risposta adesso."</em> Come gestisci questa chiamata mantenendo il processo attivo?`,
+          tech:`<strong>09:10.</strong> 8 VM online, 4 ERP con boot configuration corrotta — il rollback non basta. Hai due opzioni: <strong>restore da backup</strong> (60 min, i dati sono al massimo alla versione delle 22:00 — possibile perdita di 9 ore di transazioni) oppure <strong>riconfigurazione manuale</strong> (90 min, rischio di inconsistenza tra VM). Il MIM sta gestendo una chiamata difficile con il cliente.`,
+          sd:`<strong>09:15.</strong> Il MI ticket ha 11 ticket child. L'operations manager di Beta Corporation ha appena creato <strong>3 ticket priorità critica direttamente nel sistema,</strong> bypassando il bridge. Il tecnico è in attesa che il MIM approvi il percorso di recovery. Il bridge chiede: "Quale delle due opzioni è stata scelta? Il processo è bloccato in attesa."`,
+        },
+        questions:{
+          mim:'L\'operations manager chiede chi ha autorizzato l\'aggiornamento. Come rispondi?',
+          tech:'Due opzioni, entrambe rischiose, 40 persone ferme. Come le presenti al MIM?',
+          sd:'Ticket diretti dall\'operations manager e processo bloccato in attesa. Come gestisci?'
+        },
+        choices:{
+          mim:[
+            { key:'A', text:'"L\'aggiornamento è stato applicato da Elmec nella finestra di manutenzione programmata. La responsabilità è nostra. ETA attuale: 60 min per i sistemi ERP. Prossimo aggiornamento tra 30 min. L\'analisi su chi ha autorizzato la facciamo nella problem determination dopo la chiusura del MI — adesso concentriamoci sul ripristino."', type:'c', pts:15 },
+            { key:'B', text:'Spieghi che l\'aggiornamento era certificato dal vendor e approvato dal processo di change management: cerchi di distribuire la responsabilità.', type:'x', pts:0 },
+            { key:'C', text:'Trasferisci la chiamata al CSM: sta diventando una questione legale e commerciale.', type:'p', pts:4 },
+            { key:'D', text:'"Non posso rispondere a questa domanda durante il MI attivo. La contatteremo dopo la chiusura con un report completo."', type:'p', pts:5 }
+          ],
+          tech:[
+            { key:'A', text:'Presenti al MIM entrambe le opzioni con rischi quantificati: restore backup (60 min, possibile data loss 9h) vs riconfigurazione manuale (90 min, rischio inconsistenza). Raccomandi il restore backup ma la decisione è del MIM — coinvolge il cliente.', type:'c', pts:15 },
+            { key:'B', text:'Procedi direttamente con il restore da backup: è la scelta più sicura tecnicamente e non puoi aspettare.', type:'p', pts:5 },
+            { key:'C', text:'Procedi con la riconfigurazione manuale: evita la perdita dati e sei abbastanza sicuro di riuscirci.', type:'p', pts:4 },
+            { key:'D', text:'Dici al MIM che ti servono altri 30 min per una valutazione più approfondita prima di poter proporre opzioni.', type:'x', pts:0 }
+          ],
+          sd:[
+            { key:'A', text:'Colleghi i 3 ticket dell\'operations manager come child del MI master, comunichi al bridge: "In attesa di approvazione MIM sul percorso di recovery — escalation a MIM in corso", aggiorni il ticket MI con le due opzioni tecniche e lo stato "pending approval".', type:'c', pts:15 },
+            { key:'B', text:'Approvi autonomamente il percorso restore backup nel ticket: il processo non può essere bloccato per burocrazia con 40 persone ferme.', type:'x', pts:0 },
+            { key:'C', text:'Gestisci i ticket dell\'operations manager separatamente: sono un canale diverso, meglio non mischiarli con il MI.', type:'p', pts:4 },
+            { key:'D', text:'Mandi un\'email a tutti gli stakeholder chiedendo chi deve dare l\'approvazione formale.', type:'p', pts:3 }
+          ]
+        },
+        feedback:{
+          mim:{
+            c:'Corretto. "Responsabilità nostra + ETA + prossimo aggiornamento + problem determination dopo" è la risposta giusta. Non elude la domanda, non si difende, non si perde in dettagli durante il MI attivo. Il cliente ha la risposta che cercava e il processo continua.',
+            p:'Parziale. Trasferire al CSM o rimandare tutto al dopo-MI lascia l\'operations manager senza risposta durante il momento peggiore. Non basta — il MIM deve gestire questa chiamata.',
+            x:'Errore. Distribuire la responsabilità sul vendor o sul change management durante un MI attivo è percepito come mancanza di accountability. Beta Corporation lo ricorderà molto più a lungo del problema tecnico.'
+          },
+          tech:{
+            c:'Corretto. Le opzioni con rischi quantificati al MIM: la scelta di restore backup vs riconfigurazione manuale ha implicazioni che vanno oltre il tecnico — riguarda i dati del cliente e deve essere condivisa. Il MIM potrebbe dover avvisare Beta Corporation della possibile data loss prima di procedere.',
+            p:'Parziale. Procedere autonomamente con una scelta che implica possibile perdita dati di 9 ore è una decisione che il cliente ha diritto di conoscere prima che venga eseguita.',
+            x:'Errore. Chiedere altri 30 min di valutazione quando 40 persone sono ferme da ore è inaccettabile. Il tecnico ha già le informazioni necessarie per presentare le opzioni.'
+          },
+          sd:{
+            c:'Corretto. I ticket dell\'operations manager collegati al MI master + stato "pending approval" visibile a tutti + escalation formale al MIM: il SD mantiene la visibilità unificata anche quando l\'escalation bypassa il bridge. Il MIM ha tutto sotto controllo.',
+            p:'Parziale. Ticket separati o email dispersive frammentano la visibilità. Con un processo già bloccato, ogni frammentazione aggiuntiva aumenta il caos.',
+            x:'Errore. Il SD non ha il mandato di approvare percorsi di recovery che possono comportare perdita di dati del cliente. Quella è una decisione del MIM con coinvolgimento del cliente.'
+          }
+        },
+        bonus:{ condition:ch=>ch.tech?.type==='c'&&ch.sd?.type==='c', groups:['tech','sd'], pts:5, title:'🎯 COORDINAMENTO TECNICO + SERVICE DESK', body:'Opzioni presentate al MIM con rischi completi, processo unificato mantenuto nonostante l\'escalation bypass. Il MIM ha tutto quello che serve per decidere e comunicare al cliente. +5 punti per Tecnico e Service Desk!' },
+        consequence:ch=>{
+          const m=ch.mim?.type==='c',t=ch.tech?.type==='c';
+          if(m&&t)return`<strong>Escalation gestita con professionalità.</strong> L'operations manager ha avuto una risposta chiara e onesta. Le opzioni tecniche sono sul tavolo del MIM con i rischi quantificati. Beta Corporation sa che Elmec gestisce la situazione con struttura.`;
+          if(m&&!t)return`MIM ha gestito bene la chiamata ma <strong>il tecnico ha agito senza condivisione.</strong> La scelta sul percorso di recovery potrebbe implicare data loss che il cliente non è stato avvisato.`;
+          if(!m)return`<strong>L'operations manager non ha avuto risposta chiara sulla responsabilità.</strong> La fiducia è compromessa. La chiusura dovrà gestire sia il MI che le ricadute relazionali.`;
+          return`<strong>Esecuzione con criticità multiple.</strong> La chiusura dovrà affrontare lacune tecniche e relazionali insieme.`;
+        }
+      },
+
+      // S2-F3: CHIUSURA
       {
         name:'CHIUSURA', time:420,
         fac_scenario:`<strong>10:30.</strong> Rollback completato. Tutte le 12 VM di Beta Corporation sono online. Il referente IT ha confermato. Root cause definitiva: il firmware Elmec ha introdotto un bug di compatibilità con la versione kernel specifica di Beta Corporation — configurazione non testata nel change process Elmec. Beta Corporation vuole una spiegazione formale e sta valutando uno SLA credit.`,
@@ -936,15 +1074,17 @@ const SCENARIOS = [
 ];
 
 const AGENDA_ITEMS = [
-  { label:'Briefing — processo, tipologie, ruoli',   time:'0:00', dur:'10 min', step:1 },
-  { label:'S1-F1 — Dichiarazione',                   time:'0:10', dur:'10 min', step:2, sc:'s1' },
-  { label:'S1-F2 — Avvio',                           time:'0:20', dur:'10 min', step:3, sc:'s1' },
-  { label:'S1-F3 — Esecuzione',                      time:'0:30', dur:'12 min', step:4, sc:'s1' },
-  { label:'S1-F4 — Chiusura',                        time:'0:42', dur:'10 min', step:5, sc:'s1' },
-  { label:'☕ Pausa tra scenari',                     time:'0:52', dur:'5 min',  step:6 },
-  { label:'S2-F1 — Dichiarazione proattiva',         time:'0:57', dur:'10 min', step:7, sc:'s2' },
-  { label:'S2-F2 — Chiusura con responsabilità',     time:'1:07', dur:'10 min', step:8, sc:'s2' },
-  { label:'Debrief finale + classifica cumulativa',  time:'1:17', dur:'13 min', step:9 },
+  { label:'Briefing — processo, tipologie, ruoli',    step:1 },
+  { label:'S1-F1 — Dichiarazione',                    step:2, sc:'s1' },
+  { label:'S1-F2 — Avvio',                            step:3, sc:'s1' },
+  { label:'S1-F3 — Esecuzione',                       step:4, sc:'s1' },
+  { label:'S1-F4 — Chiusura',                         step:5, sc:'s1' },
+  { label:'☕ Pausa tra scenari',                      step:6 },
+  { label:'S2-F1 — Dichiarazione proattiva',          step:7, sc:'s2' },
+  { label:'S2-F2 — Avvio con responsabilità Elmec',   step:8, sc:'s2' },
+  { label:'S2-F3 — Esecuzione sotto escalation',      step:9, sc:'s2' },
+  { label:'S2-F4 — Chiusura responsabile',            step:10, sc:'s2' },
+  { label:'Debrief finale + classifica cumulativa',   step:11 },
 ];
 
 // ═══════════ STATE ═══════════
@@ -983,9 +1123,7 @@ function toggleAgenda(){
   const rows=AGENDA_ITEMS.map(a=>{
     const sc=a.sc?`<span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:${a.sc==='s1'?'var(--mim)':'var(--purple)'};margin-right:6px">${a.sc.toUpperCase()}</span>`:'';
     return`<div class="ag-row ${currentStep>a.step?'done':''} ${currentStep===a.step?'cur':''}">
-      <div class="ag-time">${a.time}</div>
       <div class="ag-name">${sc}${a.label}</div>
-      <div class="ag-dur">${a.dur}</div>
     </div>`;
   }).join('');
   document.getElementById('ag-rows').innerHTML=rows;
@@ -1242,7 +1380,7 @@ function startS2Intro(){
 // ═══════════ FINAL ═══════════
 function showFinal(){
   clearTimer();
-  currentStep=9;
+  currentStep=11;
   document.getElementById('tb-phase').textContent='CLASSIFICA FINALE';
   updateTopScores();
 
