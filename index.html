@@ -81,10 +81,10 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .wsc-badge{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;
   padding:3px 8px;border-radius:2px;margin-bottom:10px;}
 .wsc-badge.s1{color:var(--mim);background:var(--mim-d);border:1px solid var(--mim-b);}
-.wsc-badge.s2{color:var(--purple);background:var(--purple-d);border:1px solid var(--purple-b);}
+.wsc-badge.{color:var(--purple);background:var(--purple-d);border:1px solid var(--purple-b);}
 .wsc-name{font-family:'Syne',sans-serif;font-weight:900;font-size:16px;margin-bottom:6px;}
 .wsc-name.s1{color:var(--mim);}
-.wsc-name.s2{color:var(--purple);}
+.wsc-name.{color:var(--purple);}
 .wsc-desc{font-size:11px;color:var(--text);line-height:1.7;}
 .wsc-desc strong{color:var(--white);}
 .wlc-roles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:680px;width:100%;margin-bottom:26px;}
@@ -601,7 +601,7 @@ const SCENARIOS = [
         debrief_questions:[
           { role:'MIM', q:'Quali criteri avete usato per dichiarare il MI? Aspettare la causa è una scelta difendibile?' },
           { role:'TECNICO', q:'Fino a dove arriva la vostra autonomia tecnica prima di coinvolgere il MIM?' },
-          { role:'SERVICE DESK', q:'Come distinguete un P1 urgente da un MI vero? Il ticket cambia davvero qualcosa nel processo?' }
+          { role:'SERVICE DESK', q:'Come distinguete una Severity High da un MI vero? Il ticket cambia davvero qualcosa nel processo?' }
         ],
         narratives:{
           mim:`<strong>23:31.</strong> Alert critico: storage offline, 150 VM Acme a rischio. Nessuna causa nota. Il cliente non sa nulla. La dichiarazione MI Elmec deve avvenire congiuntamente con un unico interlocutore del cliente, confermata telefonicamente. Hai pochi minuti.`,
@@ -617,7 +617,7 @@ const SCENARIOS = [
           mim:[
             { key:'A', text:'Dichiari subito il MI Elmec: 150 VM enterprise soddisfano i criteri. Chiami il referente IT di Acme per la dichiarazione congiunta e nomini te stesso MIM.', type:'c', pts:15 },
             { key:'B', text:'Aspetti 15 min di diagnostica: non vuoi dichiarare un falso allarme svegliando tutto il team.', type:'x', pts:0 },
-            { key:'C', text:'Apri un P1 standard e rivaluti tra 10 minuti se escalare a MI.', type:'p', pts:5 },
+            { key:'C', text:'Apri un Severity High e rivaluti tra 10 minuti se escalare a MI.', type:'p', pts:5 },
             { key:'D', text:'Chiami il tecnico per capire la causa prima di decidere cosa dichiarare.', type:'p', pts:3 }
           ],
           tech:[
@@ -627,16 +627,16 @@ const SCENARIOS = [
             { key:'D', text:'Contatti subito il vendor per aprire un ticket di supporto.', type:'p', pts:5 }
           ],
           sd:[
-            { key:'A', text:'Apri un P1 standard e aspetti che il MIM decida se dichiarare MI.', type:'p', pts:4 },
+            { key:'A', text:'Apri un Severity High e aspetti che il MIM decida se dichiarare MI.', type:'p', pts:4 },
             { key:'B', text:'Apri ticket "MI Elmec", colleghi gli alert come child ticket, aggiorni il log ogni 15 min, avvisi il MIM.', type:'c', pts:15 },
             { key:'C', text:'Aspetti di capire meglio prima di aprire qualsiasi cosa.', type:'x', pts:0 },
             { key:'D', text:'Chiami il MIM per istruzioni sul ticket da aprire.', type:'p', pts:5 }
           ]
         },
         feedback:{
-          mim:{ c:'Corretto. I criteri MI si basano sull\'impatto, non sulla causa nota. 150 VM enterprise sono sufficienti. La chiamata congiunta telefonica al referente cliente è obbligatoria. Ogni minuto senza dichiarazione è governance persa.', p:'Parziale. Un P1 non attiva il processo MI: nessun MIM nominato, nessuna dichiarazione congiunta. Si perde il framework che protegge dal caos.', x:'Errore. I criteri MI si basano sull\'impatto, non sulla conoscenza della causa. 15 minuti senza MIM, senza processo — Low Road pura.' },
+          mim:{ c:'Corretto. I criteri MI si basano sull\'impatto, non sulla causa nota. 150 VM enterprise sono sufficienti. La chiamata congiunta telefonica al referente cliente è obbligatoria. Ogni minuto senza dichiarazione è governance persa.', p:'Parziale. Una Severity High non attiva il processo MI: nessun MIM nominato, nessuna dichiarazione congiunta. Si perde il framework che protegge dal caos.', x:'Errore. I criteri MI si basano sull\'impatto, non sulla conoscenza della causa. 15 minuti senza MIM, senza processo — Low Road pura.' },
           tech:{ c:'Corretto. Diagnostica parallela senza modifiche: prima si capisce, poi si agisce. Modificare senza diagnosi può aggravare il guasto e distruggere l\'audit trail.', p:'Parziale. La diagnostica inizia in parallelo alla dichiarazione MI, senza aspettare l\'autorizzazione formale.', x:'Errore gravissimo. Riavviare senza diagnosi: si possono perdere dati, corrompere filesystem, distruggere i log per la root cause.' },
-          sd:{ c:'Corretto. MI Elmec con child ticket è la struttura giusta: vista unificata, no duplicati, log continuo. Il SD non aspetta istruzioni — ha il mandato di processo.', p:'Parziale. Aspettare o aprire un P1 non crea la struttura MI necessaria.', x:'Errore. Il ticket si apre subito con le informazioni disponibili. Aspettare significa iniziare in ritardo su tutto.' }
+          sd:{ c:'Corretto. MI Elmec con child ticket è la struttura giusta: vista unificata, no duplicati, log continuo. Il SD non aspetta istruzioni — ha il mandato di processo.', p:'Parziale. Aspettare o aprire un Severity High non crea la struttura MI necessaria.', x:'Errore. Il ticket si apre subito con le informazioni disponibili. Aspettare significa iniziare in ritardo su tutto.' }
         },
         bonus:{ condition:ch=>ch.mim?.type==='c'&&ch.sd?.type==='c', groups:['mim','sd'], pts:5, title:'🎯 COORDINAMENTO MIM + SERVICE DESK', body:'MI dichiarato con chiamata congiunta, ticket MI Elmec aperto correttamente. Il processo è partito in modo allineato. +5 punti per MIM e Service Desk!' },
         consequence:ch=>{
@@ -644,7 +644,7 @@ const SCENARIOS = [
           if(m&&s)return`<strong>Avvio coordinato.</strong> MI dichiarato, ticket MI Elmec strutturato. La High Road è attivata dall'inizio.`;
           if(m&&!s)return`MI dichiarato, ma <strong>la struttura del ticket non è quella MI.</strong> Traccia documentale fragile fin dall'inizio.`;
           if(!m&&s)return`Ticket MI aperto, ma <strong>senza dichiarazione congiunta il processo non è formalmente attivo.</strong>`;
-          return`<strong>Né dichiarazione MI né ticket corretto.</strong> Si lavora in P1 su un incidente che richiede processo MI.`;
+          return`<strong>Né dichiarazione MI né ticket corretto.</strong> Si lavora in Severity High su un incidente che richiede processo MI.`;
         }
       },
       // S1-F1: AVVIO
@@ -662,7 +662,7 @@ const SCENARIOS = [
         narratives:{
           mim:`<strong>23:45.</strong> MI dichiarato. Tecnico ha completato la prima diagnostica. Devi strutturare l'<strong>Avvio</strong>: piano comunicazione, prima comunicazione al cliente con accordi e coordinate, tavoli tecnici. Il cliente non ha ancora ricevuto nulla.`,
           tech:`<strong>23:45.</strong> Diagnostica completata: <strong>guasto hardware controller storage primario. Failover non scattato</strong> — probabile bug firmware. Hai due opzioni: workaround 45 min o soluzione definitiva 2-3h. Il MIM ti chiede un ETA.`,
-          sd:`<strong>23:47.</strong> Ticket MI aperto. Negli ultimi 12 min: <strong>18 ticket correlati</strong> da utenti Acme. La coda cresce. Il bridge tecnico chiede aggiornamenti ogni 5 minuti.`
+          sd:`<strong>23:47.</strong> Ticket MI aperto. Negli ultimi 12 min: <strong>18 ticket correlati</strong> da utenti Acme. La coda cresce. La War Room chiede aggiornamenti ogni 5 minuti.`
         },
         questions:{
           mim:'Come strutturi l\'Avvio? Piano comunicazione, prima call al cliente, tavoli.',
@@ -672,8 +672,8 @@ const SCENARIOS = [
         choices:{
           mim:[
             { key:'A', text:'Aspetti l\'ETA definitivo del tecnico prima del piano comunicazione: non vuoi dare aggiornamenti vaghi.', type:'x', pts:0 },
-            { key:'B', text:'Apri il bridge tecnico interno e aspetti che la situazione si chiarisca prima di coinvolgere il cliente.', type:'p', pts:4 },
-            { key:'C', text:'Definisci piano comunicazione (bridge Teams, update cliente ogni 30 min), prima comunicazione al cliente, coinvolgi CSM e responsabili, apri tavolo tecnico. Tutto in parallelo.', type:'c', pts:15 },
+            { key:'B', text:'Apri la War Room interno e aspetti che la situazione si chiarisca prima di coinvolgere il cliente.', type:'p', pts:4 },
+            { key:'C', text:'Definisci piano comunicazione (la War Room Teams, update cliente ogni 30 min), prima comunicazione al cliente, coinvolgi CSM e responsabili, apri tavolo tecnico. Tutto in parallelo.', type:'c', pts:15 },
             { key:'D', text:'Deleghi il piano comunicazione al SD e il tavolo tecnico al tecnico.', type:'p', pts:5 }
           ],
           tech:[
@@ -684,7 +684,7 @@ const SCENARIOS = [
           ],
           sd:[
             { key:'A', text:'Gestisci ogni ticket separatamente: la granularità è importante.', type:'p', pts:4 },
-            { key:'B', text:'Colleghi tutti i 18 ticket come child del MI master, blocchi i duplicati, log MI aggiornato, vista consolidata al bridge.', type:'c', pts:15 },
+            { key:'B', text:'Colleghi tutti i 18 ticket come child del MI master, blocchi i duplicati, log MI aggiornato, vista consolidata War Room.', type:'c', pts:15 },
             { key:'C', text:'Chiudi i ticket duplicati senza collegarli al MI.', type:'x', pts:0 },
             { key:'D', text:'Deleghi la gestione ticket al secondo livello e ti concentri solo sul MI master.', type:'p', pts:3 }
           ]
@@ -692,7 +692,7 @@ const SCENARIOS = [
         feedback:{
           mim:{ c:'Corretto. Piano comunicazione non aspetta l\'ETA tecnico: si struttura con "update ogni 30 min" e si aggiorna. Prima comunicazione al cliente con accordi e coordinate è il passo 3 dell\'Avvio. Tutto in parallelo.', p:'Parziale. Aspettare chiarezza tecnica o delegare senza coordinamento lascia il cliente nel buio.', x:'Errore. Aspettare l\'ETA è Low Road: il cliente con 150 VM offline ha bisogno di sapere subito che il processo è attivo.' },
           tech:{ c:'Corretto. Le opzioni con rischi al MIM: la decisione finale spetta al MIM che bilancia rischio tecnico, SLA e aspettative cliente già comunicate.', p:'Parziale. Scegliere da soli può portare ad azioni non allineate con quanto già comunicato al cliente.', x:'Errore. Aspettare approvazione per tutto rallenta inutilmente. Preparare le opzioni è autonomia corretta del tecnico.' },
-          sd:{ c:'Corretto. MI master con child ticket: vista unificata, no duplicati, log continuo. Il bridge ha un unico punto di verità. Senza questa struttura il MI Report finale è impossibile.', p:'Parziale. Ticket separati frammentano la vista MI e rendono impossibile il report finale.', x:'Errore. Chiudere ticket senza collegarli al MI distrugge la traccia dell\'incidente.' }
+          sd:{ c:'Corretto. MI master con child ticket: vista unificata, no duplicati, log continuo. La War Room ha un unico punto di verità. Senza questa struttura il MI Report finale è impossibile.', p:'Parziale. Ticket separati frammentano la vista MI e rendono impossibile il report finale.', x:'Errore. Chiudere ticket senza collegarli al MI distrugge la traccia dell\'incidente.' }
         },
         bonus:{ condition:ch=>ch.mim?.type==='c'&&ch.sd?.type==='c', groups:['mim','sd'], pts:5, title:'🎯 COORDINAMENTO MIM + SERVICE DESK', body:'Piano strutturato in parallelo e struttura MI con child ticket consolidata. Il framework funziona. +5 punti per MIM e Service Desk!' },
         consequence:ch=>{
@@ -718,7 +718,7 @@ const SCENARIOS = [
         narratives:{
           mim:`<strong>00:30.</strong> 80 VM online, 70 ancora giù. Il management di Acme ti chiama: <em>"Sono le 00:30. I miei sistemi sono giù da un'ora. Quando finisce? Ho bisogno di una risposta da dare al mio CEO adesso."</em> Stima vendor: 90 minuti. Non garantita.`,
           tech:`<strong>00:25.</strong> 80/150 VM online. 70 VM di produzione ancora offline. Serve sostituzione fisica del controller — solo il vendor. Vendor stima 90 min dall'approvazione. Alternativa: rerouting su storage secondario (30 min, rischio instabilità medio-alto).`,
-          sd:`<strong>00:30.</strong> Il MI ticket ha 67 child ticket. Il vendor ha aperto il proprio incident interno. Il bridge chiede: <em>"Il tecnico aspetta l'approvazione per la sostituzione hardware — chi deve approvarla? Il processo è bloccato."</em>`
+          sd:`<strong>00:30.</strong> Il MI ticket ha 67 child ticket. Il vendor ha aperto il proprio incident interno. La War Room chiede: <em>"Il tecnico aspetta l'approvazione per la sostituzione hardware — chi deve approvarla? Il processo è bloccato."</em>`
         },
         questions:{
           mim:'Il management Acme chiede un ETA preciso da dare al CEO. Come rispondi?',
@@ -740,7 +740,7 @@ const SCENARIOS = [
           ],
           sd:[
             { key:'A', text:'Approvi tu stesso la procedura vendor: il processo non può bloccarsi per burocrazia.', type:'x', pts:0 },
-            { key:'B', text:'Aggiorni il MI ticket con vendor incident, identifichi il MIM come approvatore, comunichi al bridge: "Approvazione richiesta al MIM — in attesa."', type:'c', pts:15 },
+            { key:'B', text:'Aggiorni il MI ticket con vendor incident, identifichi il MIM come approvatore, comunichi nel War Room: "Approvazione richiesta al MIM — in attesa."', type:'c', pts:15 },
             { key:'C', text:'Aspetti che il tecnico risolva da solo il problema dell\'approvazione.', type:'x', pts:0 },
             { key:'D', text:'Mandi un\'email a tutti i ruoli chiedendo chi approva.', type:'p', pts:5 }
           ]
@@ -846,7 +846,7 @@ const SCENARIOS = [
           mim:[
             { key:'A', text:'Chiami subito il referente IT di Beta Corporation, dichiari proattivamente il MI Cliente con responsabilità Elmec, nomini te stesso MIM: Elmec ha causato il problema, tocca a voi fare il primo passo.', type:'c', pts:15 },
             { key:'B', text:'Aspetti che Beta Corporation chiami: non vuoi creare allarme se il problema si risolve da solo con il rollback.', type:'x', pts:0 },
-            { key:'C', text:'Apri internamente un P1 e aspetti la diagnosi completa del tecnico prima di contattare il cliente.', type:'p', pts:4 },
+            { key:'C', text:'Apri internamente un Severity High e aspetti la diagnosi completa del tecnico prima di contattare il cliente.', type:'p', pts:4 },
             { key:'D', text:'Chiami il tecnico per capire l\'entità del danno prima di contattare il cliente: vuoi avere tutte le informazioni.', type:'p', pts:5 }
           ],
           tech:[
@@ -859,13 +859,13 @@ const SCENARIOS = [
             { key:'A', text:'Apri il ticket come "MI Elmec": i sistemi coinvolti sono Elmec quindi rientra in questa categoria.', type:'x', pts:0 },
             { key:'B', text:'Aspetti che Beta Corporation chiami prima di aprire qualsiasi ticket: è loro l\'ambiente impattato.', type:'x', pts:0 },
             { key:'C', text:'Apri ticket come "MI Cliente con responsabilità Elmec", colleghi il change record causale come riferimento, avvisi subito il MIM.', type:'c', pts:15 },
-            { key:'D', text:'Apri un P1 standard con priorità alta e avvisi il MIM per la dichiarazione MI.', type:'p', pts:5 }
+            { key:'D', text:'Apri un Severity High con priorità alta e avvisi il MIM per la dichiarazione MI.', type:'p', pts:5 }
           ]
         },
         feedback:{
           mim:{ c:'Corretto. Con MI Cliente con responsabilità Elmec, Elmec ha l\'obbligo morale e contrattuale di dichiarare proattivamente. La chiamata proattiva alle 08:15 cambia completamente la percezione del cliente rispetto a una reazione alle 09:00 dopo che gli utenti si sono lamentati.', p:'Parziale. Aspettare la diagnosi o il cliente è comprensibile ma sbagliato: ogni minuto perso è un minuto in cui gli utenti di Beta Corporation arrivano in ufficio senza nessuna comunicazione.', x:'Errore. Aspettare che il cliente chiami quando la causa è Elmec è inaccettabile. Il processo MI prevede che chi ha la responsabilità si attivi per primo.' },
           tech:{ c:'Corretto. Informare immediatamente il MIM e attendere coordinamento prima del rollback è il passo giusto. Il MIM deve poter comunicare al cliente l\'intervento prima che avvenga — non scoprirlo a fatto compiuto.', p:'Parziale. Avviare il rollback in autonomia è Low Road: azione rapida, ma il cliente potrebbe accorgersi di un secondo cambio ai sistemi senza preavviso. Il MIM coordina.', x:'Errore. Aspettare di essere contattato quando hai informazioni critiche è inaccettabile. Il tecnico ha il dovere di segnalare immediatamente al MIM.' },
-          sd:{ c:'Corretto. La classificazione "MI Cliente con responsabilità Elmec" è fondamentale: determina il processo, il tipo di ticket e la gestione della responsabilità. Collegare il change record fin dall\'apertura è il primo passo per una problem determination pulita.', p:'Parziale. Un P1 non è MI — manca tutta la struttura di processo. La classificazione corretta non è burocrazia.', x:'Errore. MI Elmec e MI Cliente con responsabilità Elmec sono categorie diverse. MI Elmec riguarda sistemi DC con potenziale impatto multi-cliente. Qui la causa è un\'azione Elmec su sistemi di un singolo cliente.' }
+          sd:{ c:'Corretto. La classificazione "MI Cliente con responsabilità Elmec" è fondamentale: determina il processo, il tipo di ticket e la gestione della responsabilità. Collegare il change record fin dall\'apertura è il primo passo per una problem determination pulita.', p:'Parziale. Una Severity High non è MI — manca tutta la struttura di processo. La classificazione corretta non è burocrazia.', x:'Errore. MI Elmec e MI Cliente con responsabilità Elmec sono categorie diverse. MI Elmec riguarda sistemi DC con potenziale impatto multi-cliente. Qui la causa è un\'azione Elmec su sistemi di un singolo cliente.' }
         },
         bonus:{ condition:ch=>ch.mim?.type==='c'&&ch.sd?.type==='c', groups:['mim','sd'], pts:5, title:'🎯 DICHIARAZIONE PROATTIVA + TICKET CORRETTO', body:'Elmec ha dichiarato proattivamente prima che il cliente chiamasse, e il ticket è classificato correttamente come MI Cliente con responsabilità Elmec. La differenza nella percezione del cliente è enorme. +5 punti per MIM e Service Desk!' },
         consequence:ch=>{
@@ -880,7 +880,7 @@ const SCENARIOS = [
       {
         name:'AVVIO', time:420,
         fac_scenario:`<strong>08:20.</strong> MI Cliente con responsabilità Elmec dichiarato. Il tecnico ha avviato il rollback firmware: 3 VM su 12 già tornate online. Il referente IT di Beta Corporation ha ricevuto la chiamata di Elmec — sorpreso ma in ascolto. Ora bisogna strutturare l'<strong>Avvio</strong> con una differenza chiave rispetto al MI Elmec: il piano di comunicazione include fin dall'inizio il riconoscimento della responsabilità Elmec.`,
-        inject:`⚠ INJECT — Rollback in corso: 3/12 VM online. ETA rollback completo: 45 min. Vendor ha confermato il bug firmware — documentazione disponibile. Bridge tecnico aperto.`,
+        inject:`⚠ INJECT — Rollback in corso: 3/12 VM online. ETA rollback completo: 45 min. Vendor ha confermato il bug firmware — documentazione disponibile. War Room aperta.`,
         reveal_title:'Come avete strutturato l\'Avvio con responsabilità Elmec?',
         reveal_sub:'Il piano di comunicazione riflette che la causa è Elmec? La struttura tecnica è coordinata?',
         debrief_questions:[
@@ -890,12 +890,12 @@ const SCENARIOS = [
         ],
         narratives:{
           mim:`<strong>08:20.</strong> MI dichiarato proattivamente. Rollback in corso, 3 VM già online. Il referente IT di Beta Corporation è in attesa — sa che Elmec ha causato il problema. Devi strutturare il piano di comunicazione: strumenti, cadenza, attori. Con una differenza rispetto al MI Elmec: <strong>il riconoscimento della responsabilità è parte integrante della prima comunicazione formale.</strong>`,
-          tech:`<strong>08:18.</strong> Rollback in corso, 3/12 VM online. ETA rollback completo: <strong>45 minuti.</strong> Il vendor ha confermato il bug firmware — hai tutta la documentazione tecnica. Il MIM sta strutturando le comunicazioni verso il cliente. Cosa prepari per il bridge tecnico e cosa comunichi al MIM?`,
-          sd:`<strong>08:20.</strong> Ticket "MI Cliente con responsabilità Elmec" aperto. Tre ticket da utenti Beta Corporation già in coda. Il change record del firmware applicato alle 02:00 è nel sistema. Il bridge chiede aggiornamenti. Come strutturi il processo quando la causa è un tuo change?`
+          tech:`<strong>08:18.</strong> Rollback in corso, 3/12 VM online. ETA rollback completo: <strong>45 minuti.</strong> Il vendor ha confermato il bug firmware — hai tutta la documentazione tecnica. Il MIM sta strutturando le comunicazioni verso il cliente. Cosa prepari per la War Room e cosa comunichi al MIM?`,
+          sd:`<strong>08:20.</strong> Ticket "MI Cliente con responsabilità Elmec" aperto. Tre ticket da utenti Beta Corporation già in coda. Il change record del firmware applicato alle 02:00 è nel sistema. La War Room chiede aggiornamenti. Come strutturi il processo quando la causa è un tuo change?`
         },
         questions:{
           mim:'Come strutturi il piano di comunicazione quando la responsabilità è di Elmec?',
-          tech:'Hai tutti i dettagli tecnici. Cosa prepari per il bridge e per il MIM?',
+          tech:'Hai tutti i dettagli tecnici. Cosa prepari per la War Room e per il MIM?',
           sd:'Come colleghi il change record causale e gestisci i ticket in arrivo?'
         },
         choices:{
@@ -907,7 +907,7 @@ const SCENARIOS = [
           ],
           tech:[
             { key:'A', text:'Ti concentri solo sul rollback: finché le VM sono offline non c\'è tempo per documentazione o report.', type:'p', pts:4 },
-            { key:'B', text:'Prepari riepilogo tecnico completo per il MIM (cosa è stato applicato, cosa è successo, rollback progress, ETA), apri bridge strutturato con SAL ogni 20 min, segnali al MIM che il vendor bug va documentato formalmente.', type:'c', pts:15 },
+            { key:'B', text:'Prepari riepilogo tecnico completo per il MIM (cosa è stato applicato, cosa è successo, rollback progress, ETA), apri la War Room strutturata con SAL ogni 20 min, segnali al MIM che il vendor bug va documentato formalmente.', type:'c', pts:15 },
             { key:'C', text:'Aspetti che il rollback sia completato prima di preparare qualsiasi documentazione: non vuoi scrivere cose che potrebbero cambiare.', type:'p', pts:3 },
             { key:'D', text:'Procedi con rollback autonomamente senza aggiornare nessuno: sai esattamente cosa fare, ogni interruzione rallenta.', type:'x', pts:0 }
           ],
@@ -925,7 +925,7 @@ const SCENARIOS = [
             x:'Errore. Aspettare il rollback o minimizzare la responsabilità nella prima comunicazione sono le mosse peggiori. Beta Corporation potrebbe scoprire tutto da sola e la perdita di fiducia sarebbe molto più grave del problema tecnico.'
           },
           tech:{
-            c:'Corretto. Riepilogo tecnico al MIM + bridge strutturato + segnalazione vendor bug: questo è il contributo del tecnico all\'Avvio. Il MIM non può comunicare bene al cliente senza queste informazioni — e la documentazione del bug vendor serve già ora per la problem determination finale.',
+            c:'Corretto. Riepilogo tecnico al MIM + War Room strutturato + segnalazione vendor bug: questo è il contributo del tecnico all\'Avvio. Il MIM non può comunicare bene al cliente senza queste informazioni — e la documentazione del bug vendor serve già ora per la problem determination finale.',
             p:'Parziale. Concentrarsi solo sul rollback è comprensibile ma incompleto. Il MIM ha bisogno di informazioni tecniche per comunicare al cliente in modo preciso.',
             x:'Errore. Procedere in autonomia o aspettare prima di documentare lascia il MIM senza informazioni e la problem determination senza basi. Con responsabilità Elmec la trasparenza interna è ancora più critica.'
           },
@@ -935,10 +935,10 @@ const SCENARIOS = [
             x:'Errore. Aspettare di documentare "per sicurezza" è l\'approccio sbagliato. Il ticket si costruisce mentre l\'incidente evolve, non dopo.'
           }
         },
-        bonus:{ condition:ch=>ch.mim?.type==='c'&&ch.tech?.type==='c', groups:['mim','tech'], pts:5, title:'🎯 COMUNICAZIONE RESPONSABILE + BRIDGE TECNICO', body:'Piano comunicazione con riconoscimento Elmec strutturato, bridge tecnico con SAL regolari e documentazione pronta per il MIM. Alta strada — il modo professionale di gestire un errore proprio. +5 punti per MIM e Tecnico!' },
+        bonus:{ condition:ch=>ch.mim?.type==='c'&&ch.tech?.type==='c', groups:['mim','tech'], pts:5, title:'🎯 COMUNICAZIONE RESPONSABILE + WAR ROOM', body:'Piano comunicazione con riconoscimento Elmec strutturato, War Room con SAL regolari e documentazione pronta per il MIM. Alta strada — il modo professionale di gestire un errore proprio. +5 punti per MIM e Tecnico!' },
         consequence:ch=>{
           const m=ch.mim?.type==='c',t=ch.tech?.type==='c';
-          if(m&&t)return`<strong>Avvio strutturato con trasparenza.</strong> Beta Corporation ha già la prima comunicazione formale con riconoscimento della responsabilità Elmec. Il bridge tecnico ha informazioni precise. La fiducia del cliente è sotto stress ma il processo la protegge.`;
+          if(m&&t)return`<strong>Avvio strutturato con trasparenza.</strong> Beta Corporation ha già la prima comunicazione formale con riconoscimento della responsabilità Elmec. La War Room tecnico ha informazioni precise. La fiducia del cliente è sotto stress ma il processo la protegge.`;
           if(m&&!t)return`Piano comunicazione corretto ma <strong>il tecnico lavora senza condivisione.</strong> Il MIM potrebbe comunicare stime al cliente che il tecnico non ha validato.`;
           if(!m)return`<strong>Beta Corporation non ha ancora ricevuto comunicazione strutturata.</strong> Ogni minuto senza risposta formale aumenta la frustrazione — soprattutto sapendo che la causa è Elmec.`;
           return`<strong>Avvio parziale.</strong> Lacune nella comunicazione o nel coordinamento tecnico, con responsabilità Elmec già nota al cliente.`;
@@ -960,7 +960,7 @@ const SCENARIOS = [
         narratives:{
           mim:`<strong>09:15.</strong> 8 VM online, 4 ERP ancora ferme. Il tuo telefono squilla: è l'operations manager di Beta Corporation. <em>"Buongiorno. Ho 40 persone che non lavorano da tre ore. Ho letto il log: voi avete fatto un aggiornamento stanotte. Chi l'ha autorizzato? Il mio CEO mi chiede una risposta adesso."</em> Come gestisci questa chiamata mantenendo il processo attivo?`,
           tech:`<strong>09:10.</strong> 8 VM online, 4 ERP con boot configuration corrotta — il rollback non basta. Hai due opzioni: <strong>restore da backup</strong> (60 min, i dati sono al massimo alla versione delle 22:00 — possibile perdita di 9 ore di transazioni) oppure <strong>riconfigurazione manuale</strong> (90 min, rischio di inconsistenza tra VM). Il MIM sta gestendo una chiamata difficile con il cliente.`,
-          sd:`<strong>09:15.</strong> Il MI ticket ha 11 ticket child. L'operations manager di Beta Corporation ha appena creato <strong>3 ticket priorità critica direttamente nel sistema,</strong> bypassando il bridge. Il tecnico è in attesa che il MIM approvi il percorso di recovery. Il bridge chiede: "Quale delle due opzioni è stata scelta? Il processo è bloccato in attesa."`,
+          sd:`<strong>09:15.</strong> Il MI ticket ha 11 ticket child. L'operations manager di Beta Corporation ha appena creato <strong>3 ticket priorità critica direttamente nel sistema,</strong> bypassando la War Room. Il tecnico è in attesa che il MIM approvi il percorso di recovery. La War Room chiede: "Quale delle due opzioni è stata scelta? Il processo è bloccato in attesa."`,
         },
         questions:{
           mim:'L\'operations manager chiede chi ha autorizzato l\'aggiornamento. Come rispondi?',
@@ -981,7 +981,7 @@ const SCENARIOS = [
             { key:'D', text:'Dici al MIM che ti servono altri 30 min per una valutazione più approfondita prima di poter proporre opzioni.', type:'x', pts:0 }
           ],
           sd:[
-            { key:'A', text:'Colleghi i 3 ticket dell\'operations manager come child del MI master, comunichi al bridge: "In attesa di approvazione MIM sul percorso di recovery — escalation a MIM in corso", aggiorni il ticket MI con le due opzioni tecniche e lo stato "pending approval".', type:'c', pts:15 },
+            { key:'A', text:'Colleghi i 3 ticket dell\'operations manager come child del MI master, comunichi la War Room: "In attesa di approvazione MIM sul percorso di recovery — escalation a MIM in corso", aggiorni il ticket MI con le due opzioni tecniche e lo stato "pending approval".', type:'c', pts:15 },
             { key:'B', text:'Approvi autonomamente il percorso restore backup nel ticket: il processo non può essere bloccato per burocrazia con 40 persone ferme.', type:'x', pts:0 },
             { key:'C', text:'Gestisci i ticket dell\'operations manager separatamente: sono un canale diverso, meglio non mischiarli con il MI.', type:'p', pts:4 },
             { key:'D', text:'Mandi un\'email a tutti gli stakeholder chiedendo chi deve dare l\'approvazione formale.', type:'p', pts:3 }
@@ -999,7 +999,7 @@ const SCENARIOS = [
             x:'Errore. Chiedere altri 30 min di valutazione quando 40 persone sono ferme da ore è inaccettabile. Il tecnico ha già le informazioni necessarie per presentare le opzioni.'
           },
           sd:{
-            c:'Corretto. I ticket dell\'operations manager collegati al MI master + stato "pending approval" visibile a tutti + escalation formale al MIM: il SD mantiene la visibilità unificata anche quando l\'escalation bypassa il bridge. Il MIM ha tutto sotto controllo.',
+            c:'Corretto. I ticket dell\'operations manager collegati al MI master + stato "pending approval" visibile a tutti + escalation formale al MIM: il SD mantiene la visibilità unificata anche quando l\'escalation bypassa la War Room. Il MIM ha tutto sotto controllo.',
             p:'Parziale. Ticket separati o email dispersive frammentano la visibilità. Con un processo già bloccato, ogni frammentazione aggiuntiva aumenta il caos.',
             x:'Errore. Il SD non ha il mandato di approvare percorsi di recovery che possono comportare perdita di dati del cliente. Quella è una decisione del MIM con coinvolgimento del cliente.'
           }
